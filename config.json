@@ -1,0 +1,21 @@
+{
+  "host": "127.0.0.1",
+  "port": 5432,
+  "name": "Diplomski",
+  "user": "postgres",
+  "password": "postgres",
+  "write_to_file": "false",
+  "face_detector": "false",
+  "face_det_model_path": "",
+  "threshold": 0.6,
+  "face_recognition": "false",
+  "face_reco_model_path": "",
+  "tracker": "",
+  "tracker_model_path": "",
+  "face_antispoofing": "false",
+  "face_antispoofing_model_path": "",
+  "debugMode": "false",
+  "log": "./",
+  "ssl_mode": "false",
+  "version": "0.1dev"
+}
