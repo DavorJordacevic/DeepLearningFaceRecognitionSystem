@@ -4,6 +4,8 @@ import dlib
 import mtcnn
 import numpy as np
 
+### THIS WILL BE DELETED ###
+
 class VideoProcessor:
     def __init__(self, video_source, cfg):
 
@@ -214,3 +216,4 @@ class VideoProcessor:
 
     def haar_detect(self):
         pass
+

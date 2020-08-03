@@ -8,6 +8,6 @@ conda install -c conda-forge dlib
 wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/opencv_face_detector.pbtxt
 wget https://github.com/spmallick/learnopencv/raw/master/AgeGender/opencv_face_detector_uint8.pb
 
-git clone https://github.com/spmallick/goturn-files.git --depth=1
-cat goturn-files/goturn.caffemodel.zip* > goturn-files/goturn.caffemodel.zip
-unzip goturn-files/goturn.caffemodel.zip
+#git clone https://github.com/spmallick/goturn-files.git --depth=1
+#cat goturn-files/goturn.caffemodel.zip* > goturn-files/goturn.caffemodel.zip
+#unzip goturn-files/goturn.caffemodel.zip
