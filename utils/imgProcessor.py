@@ -1,9 +1,15 @@
+import os
 import cv2
 import uuid
 import time
 import mtcnn
 import numpy as np
+import tensorflow as tf
+from absl.flags import FLAGS
+from absl import app, flags, logging
 from scipy.special import softmax
+from arcface_tf2.modules.models import ArcFaceModel
+from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
 
 class ImgProcessor:
     def __init__(self, cfg):
@@ -31,8 +37,35 @@ class ImgProcessor:
             self.min_confidence = 0.5  # minimum probability to filter weak detections
             print("[INFO] Haar detection model loaded.")
 
-    def predict(self, img: np.array()) -> dict:
-        pass
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
+        logger = tf.get_logger()
+        logger.disabled = True
+        logger.setLevel(logging.FATAL)
+        set_memory_growth()
+
+        self.cfg = load_yaml('./arcface_tf2/configs/arc_mbv2.yaml')
+
+        self.model = ArcFaceModel(size=self.cfg['input_size'],
+                             backbone_type=self.cfg['backbone_type'],
+                             training=False)
+
+        ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + self.cfg['sub_name'])
+        if ckpt_path is not None:
+            print("[*] load ckpt from {}".format(ckpt_path))
+            self.model.load_weights(ckpt_path)
+        else:
+            print("[*] Cannot find ckpt from {}.".format(ckpt_path))
+            exit()
+
+    def encode(self, img: np.array([])) -> np.array([]):
+        img = cv2.resize(img, (self.cfg['input_size'], self.cfg['input_size']))
+        img = img.astype(np.float32) / 255.
+        if len(img.shape) == 3:
+            img = np.expand_dims(img, 0)
+        embeds = l2_norm(self.model(img))
+        return embeds
 
     def rescale_img_percent(self, img, percent=50):
         """ rescale_img_percent
@@ -47,7 +80,7 @@ class ImgProcessor:
         dim = (width, height)
         return cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
-    def rescale_img(self, img: np.array(), width: int, height: int):
+    def rescale_img(self, img: np.array([]), width: int, height: int):
         """ rescale_img
         Function for rescaling the image to the desired size
         :param img: numpy.array()
@@ -58,7 +91,7 @@ class ImgProcessor:
 
         return cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
 
-    def detect(self, img: np.array()) -> np.array():
+    def detect(self, img: np.array([])) -> np.array([]):
         """ detect
         The actual function for performing detection based on configuration parameter.
         Crops all faces from the image and returns the numpy array containing all of them.
@@ -112,7 +145,7 @@ class ImgProcessor:
 
         return faces_array
 
-    def isAlive(self, img: np.array()) -> dict:
+    def isAlive(self, img: np.array([])) -> dict:
         """ isAlive
         Function for performing prediction whether the face is real or fake.
         :param img: numpy.array()

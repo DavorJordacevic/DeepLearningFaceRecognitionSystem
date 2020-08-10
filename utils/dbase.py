@@ -52,5 +52,15 @@ def readDescriptors(db):
     return ids, descriptors
 
 # function for writing records in database
-def receiveDescriptors():
-    pass
+def receiveDescriptors(db, db_conn, embeds: np.array([])) -> dict:
+
+    query = 'INSERT INTO public.persons ("ID", name) VALUES (%s, %s);'
+    db.execute(query, embeds)
+    db_conn.commit()
+
+    embeds = np.array(embeds).tolist()
+    query = 'INSERT INTO public.faces (descriptor) VALUES (%s) RETURNING "ID"'
+    db.execute(query, embeds)
+    db_conn.commit()
+    records = db.fetchall()
+    return 'SUCCESS'
