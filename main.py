@@ -58,10 +58,16 @@ def isAlive():
 
 
 
+# Create a URL route in our application for "/@app.route('/encode')"
+# The purpose of this endpoint is to encode the face
+@app.route('/encode', methods=["POST"])
+def encode():
+    pil_image = Image.open(request.files['image']).convert('RGB')
+    img = np.array(pil_image)
+    embeds = imgProcessor.encode(img)
+    return dbase.receiveDescriptors(db, db_conn, embeds)
+
 if __name__ == '__main__':
-    # print starting text
-    ascii_banner = pyfiglet.figlet_format("F R     A P P", font="slant")
-    print(ascii_banner)
 
     # allow GPU memory grow
     gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -96,4 +102,7 @@ if __name__ == '__main__':
     # Run the flask rest api
     # This can be updated to use multiple threads or processors
     # In addition, some type of queue should be used
+    # print starting text
+    ascii_banner = pyfiglet.figlet_format("F R     A P P", font="slant")
+    print(ascii_banner)
     app.run(debug=True)
