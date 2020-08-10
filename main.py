@@ -38,7 +38,8 @@ def healtcheck():
     }
 
 
-# Create a URL route in our application for "/@app.route('/healtcheck')"
+# Create a URL route in our application for "/@app.route('/detect')"
+# The purpose of this endpoint is to extract faces from the providied imagage
 @app.route('/detect', methods=["POST"])
 def detect():
     pil_image = Image.open(request.files['image']).convert('RGB')
@@ -46,10 +47,23 @@ def detect():
     return imgProcessor.detect(img)
 
 
+
+# Create a URL route in our application for "/@app.route('/isalive')"
+# The purpose of this endpoint is to classify if the provided face is real or fake
+@app.route('/isalive', methods=["POST"])
+def isAlive():
+    pil_image = Image.open(request.files['image']).convert('RGB')
+    img = np.array(pil_image)
+    return imgProcessor.isAlive(img)
+
+
+
 if __name__ == '__main__':
+    # print starting text
     ascii_banner = pyfiglet.figlet_format("F R     A P P", font="slant")
     print(ascii_banner)
 
+    # allow GPU memory grow
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
         try:
@@ -58,9 +72,11 @@ if __name__ == '__main__':
         except RuntimeError as e:
             print(e)
 
+    # Just some prints for healt check (can be deleted with any effect on the following code)
     print("OpenCV version: ", cv2.__version__)
     print("TensorFlow version: ", tf.__version__, "  GPU avaiable: ", tf.config.list_physical_devices('GPU'))
 
+    # parse arguements
     parser = argparse.ArgumentParser(description='Process some arguments.')
     parser.add_argument('--cdp', type=str, help='the path to config file')
     parser.add_argument('--video_source', type=str, help='video source')
@@ -77,20 +93,7 @@ if __name__ == '__main__':
 
     imgProcessor = ImgProcessor(cfg)
 
-    '''
-    video = VideoProcessor(video_source, cfg)
-
-    if cfg["write_to_file"] == "false":
-        video.capture()
-    else:   
-        video.capture_and_write()
-    '''
-    '''
-    _pool = Pool(processes=12)  # this is important part- We
-    try:
-        app.run(use_reloader=False)
-    except KeyboardInterrupt:
-        _pool.close()
-        _pool.join()
-    '''
+    # Run the flask rest api
+    # This can be updated to use multiple threads or processors
+    # In addition, some type of queue should be used
     app.run(debug=True)

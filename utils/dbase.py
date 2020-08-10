@@ -1,8 +1,10 @@
 import psycopg2
 import numpy as np
 
+# dbConnect function is used to connect to Postgresql database
 def dbConnect(host, port, name, user, password):
     try:
+        # user, password, host, port, name are from the config file
         connection = psycopg2.connect(user = user,
                                       password = password,
                                       host = host,
@@ -11,7 +13,7 @@ def dbConnect(host, port, name, user, password):
 
         db = connection.cursor()
         # Print PostgreSQL Connection properties
-        #print ( connection.get_dsn_parameters(),"\n")
+        #print(connection.get_dsn_parameters(),"\n")
 
         # Print PostgreSQL version
         db.execute("SELECT version();")
@@ -23,19 +25,23 @@ def dbConnect(host, port, name, user, password):
         print ("Error while connecting to PostgreSQL", error)
     '''
     finally:
-        #closing database connection.
-            if(connection):
-                db.close()
-                connection.close()
-                print("PostgreSQL connection is closed")
+        # used only for testing purposs
+        # closing database connection.
+        if(connection):
+            db.close()
+            connection.close()
+            print("PostgreSQL connection is closed")
     '''
     return connection, db
 
+# function for reading all face descriptors and ids from database
 def readDescriptors(db):
+    # check connection
     try:
         db
     except NameError:
-        pass  # db cursor does not exist at all
+        print('Problem with the database connection')  # db cursor does not exist at all
+        return -1
 
     query = 'SELECT f."ID", f.descriptor FROM public.faces f';
     db.execute(query)
@@ -45,5 +51,6 @@ def readDescriptors(db):
 
     return ids, descriptors
 
+# function for writing records in database
 def receiveDescriptors():
     pass

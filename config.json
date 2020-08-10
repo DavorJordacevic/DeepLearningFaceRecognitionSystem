@@ -11,6 +11,7 @@
   "threshold": 0.6,
   "face_recognition": "false",
   "face_reco_model_path": "",
+  "write_to_file": "false",
   "debugMode": "false",
   "log": "./",
   "ssl_mode": "false",
