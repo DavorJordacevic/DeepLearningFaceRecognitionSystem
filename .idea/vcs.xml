@@ -3,6 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/arcface-tf2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/arcface_tf2" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/goturn-files" vcs="Git" />
   </component>
 </project>

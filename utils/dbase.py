@@ -1,5 +1,7 @@
+import uuid
 import psycopg2
 import numpy as np
+import psycopg2.extras
 
 # dbConnect function is used to connect to Postgresql database
 def dbConnect(host, port, name, user, password):
@@ -10,7 +12,6 @@ def dbConnect(host, port, name, user, password):
                                       host = host,
                                       port = port,
                                       database = name)
-
         db = connection.cursor()
         # Print PostgreSQL Connection properties
         #print(connection.get_dsn_parameters(),"\n")
@@ -20,6 +21,8 @@ def dbConnect(host, port, name, user, password):
         record = db.fetchone()
         #print("You are connected to - ", record,"\n")
         print("DB connection OK\n")
+
+        psycopg2.extras.register_uuid()
 
     except (Exception, psycopg2.Error) as error :
         print ("Error while connecting to PostgreSQL", error)
@@ -43,24 +46,50 @@ def readDescriptors(db):
         print('Problem with the database connection')  # db cursor does not exist at all
         return -1
 
-    query = 'SELECT f."ID", f.descriptor FROM public.faces f';
+    query = 'SELECT f."ID", f.descriptor, f.personid FROM public.faces f'
     db.execute(query)
     records = db.fetchall()
-    records = np.array(records, dtype='object')
-    ids, descriptors = np.array(records[:, 0]), np.array(records[:, 1])
+    #records = np.array(records, dtype='object')
 
-    return ids, descriptors
+    ids = []
+    descriptors = []
+    personsids = []
+    if records != []:
+
+        for r in records:
+            ids.append(r[0])
+            descriptors.append(r[1][0])
+            personsids.append(r[2])
+
+        return ids, descriptors, personsids
+    else:
+        return 'ERROR'
+
+
 
 # function for writing records in database
-def receiveDescriptors(db, db_conn, embeds: np.array([])) -> dict:
+def receiveDescriptors(db, db_conn, name, embeds: np.array([])) -> str:
 
-    query = 'INSERT INTO public.persons ("ID", name) VALUES (%s, %s);'
-    db.execute(query, embeds)
-    db_conn.commit()
-
-    embeds = np.array(embeds).tolist()
-    query = 'INSERT INTO public.faces (descriptor) VALUES (%s) RETURNING "ID"'
-    db.execute(query, embeds)
-    db_conn.commit()
+    query = 'INSERT INTO public.persons (name) VALUES (\'' + str(name) + '\') RETURNING "ID";'
+    db.execute(query)
     records = db.fetchall()
+    if records[0][0] != '':
+        personid = records[0][0]
+
+    for emb in embeds:
+        emb = np.array(emb).tolist()
+        query = 'INSERT INTO public.faces (descriptor, personid) VALUES (%s, %s);'
+        db.execute(query, (emb, (personid,)))
+    db_conn.commit()
     return 'SUCCESS'
+
+
+def findPersonByID(db, db_conn, personid: str) -> dict:
+    query = 'SELECT p.name FROM public.persons p WHERE "ID" = %s;'
+    db.execute(query, (personid,))
+    records = db.fetchall()
+
+    return {
+        'status':'SUCCESS',
+        'name'  : records[0][0]
+    }

@@ -11,6 +11,7 @@ from utils import config
 from flask import Flask, request
 from multiprocessing import Pool
 from utils.imgProcessor import ImgProcessor
+from utils.recognitionEngine import RecognitionEngine
 
 # Create the application instance
 app = Flask('FR APP')
@@ -20,6 +21,8 @@ def shutdown_server():
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
+
+
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
@@ -58,14 +61,39 @@ def isAlive():
 
 
 
-# Create a URL route in our application for "/@app.route('/encode')"
-# The purpose of this endpoint is to encode the face
-@app.route('/encode', methods=["POST"])
-def encode():
+# Create a URL route in our application for "/@app.route('/isalive')"
+# The purpose of this endpoint is to classify if the provided face is real or fake
+@app.route('/identification', methods=["POST"])
+def identification():
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
-    embeds = imgProcessor.encode(img)
-    return dbase.receiveDescriptors(db, db_conn, embeds)
+
+    descriptor = imgProcessor.encode(img)
+
+    response = recEngine.identification(ids, descriptor, personsids)
+    response = dbase.findPersonByID(db, db_conn, response['personid'])
+    return response
+
+
+
+# Create a URL route in our application for "/@app.route('/encode')"
+# The purpose of this endpoint is to encode the face
+@app.route('/encodeAndInsert', methods=["POST"])
+def encodeAndInsert():
+    name = request.form.get('name')
+    #pil_image = Image.open(request.files['image']).convert('RGB')
+    uploaded_files = request.files.getlist("files")
+    embeds = []
+    for image in uploaded_files:
+        pil_image = Image.open(image).convert('RGB')
+        img = np.array(pil_image)
+        embeds.append(imgProcessor.encode(img))
+    result = dbase.receiveDescriptors(db, db_conn, name, embeds)
+    if result != 'SUCCESS':
+        return 'ERROR'
+    return recEngine.makeBase()
+
+
 
 if __name__ == '__main__':
 
@@ -95,9 +123,12 @@ if __name__ == '__main__':
     db_conn, db = dbase.dbConnect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])
 
     # just a test for now
-    dbase.readDescriptors(db)
+    ids, descriptors, personsids = dbase.readDescriptors(db)
 
     imgProcessor = ImgProcessor(cfg)
+    recEngine = RecognitionEngine()
+
+    recEngine.makeBase(np.array(descriptors))
 
     # Run the flask rest api
     # This can be updated to use multiple threads or processors
