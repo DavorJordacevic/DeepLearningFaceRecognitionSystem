@@ -19,7 +19,7 @@ class RecognitionEngine:
     def identification(self, ids: [], descriptor: [], personids: []) -> dict:
         idx = self.recognizer.search_by_vector(np.array(descriptor).flatten(), 1)
         personID = personids[idx[0]]
-        print(personID)
+
         return {
             'status'  : 'SUCCESS',
             'personid': personID

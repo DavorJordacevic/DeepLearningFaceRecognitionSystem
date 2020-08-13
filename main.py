@@ -47,7 +47,10 @@ def healtcheck():
 def detect():
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
-    return imgProcessor.detect(img)
+    faces = imgProcessor.detect(img)
+    return {
+        'Status':'SUCCESS'
+    }
 
 
 
@@ -113,11 +116,9 @@ if __name__ == '__main__':
     # parse arguements
     parser = argparse.ArgumentParser(description='Process some arguments.')
     parser.add_argument('--cdp', type=str, help='the path to config file')
-    parser.add_argument('--video_source', type=str, help='video source')
 
     args = parser.parse_args()
     config_path = args.cdp
-    video_source = args.video_source if args.video_source!="0" else 0
 
     cfg = config.readConfig(config_path)
     db_conn, db = dbase.dbConnect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])

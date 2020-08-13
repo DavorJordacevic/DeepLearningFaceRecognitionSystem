@@ -1,5 +1,3 @@
 goturn-files
 goturn.prototxt
 goturn.caffemodel
-opencv_face_detector.pbtxt
-opencv_face_detector_uint8.pb

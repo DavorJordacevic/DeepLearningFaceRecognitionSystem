@@ -4,7 +4,7 @@
   "name": "Diplomski",
   "user": "postgres",
   "password": "postgres",
-  "face_detector": "HAAR",
+  "face_detector": "MTCNN",
   "face_det_model_path": "",
   "opencv_face_detector_uint8": "opencv_face_detector_uint8.pb",
   "opencv_face_detector_pbtxt": "opencv_face_detector.pbtxt",

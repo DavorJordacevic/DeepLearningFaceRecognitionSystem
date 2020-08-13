@@ -22,6 +22,8 @@ class ImgProcessor:
         self.recognizer_path = cfg["face_reco_model_path"]
         self.threshold = cfg["threshold"]
         self.write = cfg["write_to_file"]
+        self.landmarks = []
+
         if self.detector_type == "MTCNN":
             if self.dnn_detector_path == "":
                 print("[INFO] Loading MTCNN detection model...")
@@ -29,13 +31,13 @@ class ImgProcessor:
                 print("[INFO] MTCNN detection model loaded.")
                 print("MTCNN version: ", mtcnn.__version__)
 
-        if self.detector_type == "HAAR":
+        if self.detector_type == "SSD":
             # load our serialized model from disk
-            print("[INFO] Loading Haar detection model...")
+            print("[INFO] Loading SSD detection model...")
             # Here we need to read our pre-trained neural net created using Tensorflow
             self.detector = cv2.dnn.readNetFromTensorflow(self.haar_model_file, self.haar_config_file)
             self.min_confidence = 0.5  # minimum probability to filter weak detections
-            print("[INFO] Haar detection model loaded.")
+            print("[INFO] SSD detection model loaded.")
 
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -100,7 +102,7 @@ class ImgProcessor:
         """
 
         faces_array = np.array([])
-        if self.detector_type == "HAAR":
+        if self.detector_type == "SSD":
             (h, w) = img.shape[:2]
             blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
             self.detector.setInput(blob)
@@ -132,16 +134,32 @@ class ImgProcessor:
                     # get coordinates
                     x, y, width, height = face['box']
                     f = img[y:y+height, x:x+width]
-                    faces_array = np.append(faces_array, f)
 
-        if self.write == "false":
+                    right_eye_x, right_eye_y = face['keypoints']['right_eye'][0], face['keypoints']['right_eye'][1]
+                    left_eye_x, left_eye_y = face['keypoints']['left_eye'][0], face['keypoints']['left_eye'][1]
+
+                    delta_x = right_eye_x - left_eye_x
+                    delta_y = right_eye_y - left_eye_y
+                    angle = np.arctan(delta_y / delta_x)
+                    angle = (angle * 180) / np.pi
+                    print(face)
+                    h, w = f.shape[:2]
+                    # Calculating a center point of the image
+                    # Integer division "//"" ensures that we receive whole numbers
+                    center = (w // 2, h // 2)
+                    # Defining a matrix M and calling
+                    # cv2.getRotationMatrix2D method
+                    M = cv2.getRotationMatrix2D(center, (angle), 1.0)
+                    # Applying the rotation to our image using the
+                    aligned_face = cv2.warpAffine(f, M, (w, h))
+                    #cv2.imshow('aligned_face', aligned_face)
+                    #cv2.waitKey(0)
+                    #cv2.destroyAllWindows()
+                    faces_array = np.append(faces_array, aligned_face)
+
+        if self.write == "true":
             for face in faces_array:
                 cv2.imwrite(str(uuid.uuid4())+'.jpg', face)
-
-        for face in faces_array:
-            cv2.imshow('Face', face)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
 
         return faces_array
 

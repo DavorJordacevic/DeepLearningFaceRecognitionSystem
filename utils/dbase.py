@@ -63,7 +63,9 @@ def readDescriptors(db):
 
         return ids, descriptors, personsids
     else:
-        return 'ERROR'
+        return {
+        'status':'ERROR'
+    }
 
 
 
@@ -81,7 +83,9 @@ def receiveDescriptors(db, db_conn, name, embeds: np.array([])) -> str:
         query = 'INSERT INTO public.faces (descriptor, personid) VALUES (%s, %s);'
         db.execute(query, (emb, (personid,)))
     db_conn.commit()
-    return 'SUCCESS'
+    return {
+        'status':'SUCCESS'
+    }
 
 
 def findPersonByID(db, db_conn, personid: str) -> dict:
