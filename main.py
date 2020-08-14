@@ -1,5 +1,6 @@
 import os
 import cv2
+import json
 import mtcnn
 import pyfiglet
 import argparse
@@ -67,15 +68,27 @@ def isAlive():
 # Create a URL route in our application for "/@app.route('/isalive')"
 # The purpose of this endpoint is to classify if the provided face is real or fake
 @app.route('/identification', methods=["POST"])
-def identification():
+def predict_rest():
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
 
-    descriptor = imgProcessor.encode(img)
+    faces = imgProcessor.detect(img)
+    response = []
 
-    response = recEngine.identification(ids, descriptor, personsids)
-    response = dbase.findPersonByID(db, db_conn, response['personid'])
-    return response
+    for face in faces:
+        descriptor = imgProcessor.encode(face)
+
+        personid = recEngine.identification(ids, descriptor, personsids)
+        if (personid['personid'] is not None):
+            person = dbase.findPersonByID(db, db_conn, personid['personid'])
+            response.append(person)
+        else:
+            response.append(personid)
+
+    return {
+        'status': 'SUCCESS',
+        'response': response
+    }
 
 
 
@@ -90,11 +103,15 @@ def encodeAndInsert():
     for image in uploaded_files:
         pil_image = Image.open(image).convert('RGB')
         img = np.array(pil_image)
-        embeds.append(imgProcessor.encode(img))
+        faces = imgProcessor.detect(img)
+        embeds.append(imgProcessor.encode(np.array(faces[0])))
+
     result = dbase.receiveDescriptors(db, db_conn, name, embeds)
-    if result != 'SUCCESS':
-        return 'ERROR'
-    return recEngine.makeBase()
+    if result['status'] != 'SUCCESS':
+        return {'status': 'ERROR'}
+
+    ids, descriptors, personsids = dbase.readDescriptors(db)
+    return recEngine.makeBase(descriptors)
 
 
 
@@ -123,7 +140,6 @@ if __name__ == '__main__':
     cfg = config.readConfig(config_path)
     db_conn, db = dbase.dbConnect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])
 
-    # just a test for now
     ids, descriptors, personsids = dbase.readDescriptors(db)
 
     imgProcessor = ImgProcessor(cfg)
