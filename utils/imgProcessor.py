@@ -16,8 +16,8 @@ class ImgProcessor:
 
         self.detector_type = cfg["face_detector"]
         self.dnn_detector_path = cfg["face_det_model_path"]
-        self.haar_model_file = cfg["opencv_face_detector_uint8"]
-        self.haar_config_file = cfg["opencv_face_detector_pbtxt"]
+        self.ssd_model_file = cfg["opencv_face_detector_uint8"]
+        self.ssd_config_file = cfg["opencv_face_detector_pbtxt"]
         self.recognizer = cfg["face_recognition"]
         self.recognizer_path = cfg["face_reco_model_path"]
         self.threshold = cfg["threshold"]
@@ -35,7 +35,7 @@ class ImgProcessor:
             # load our serialized model from disk
             print("[INFO] Loading SSD detection model...")
             # Here we need to read our pre-trained neural net created using Tensorflow
-            self.detector = cv2.dnn.readNetFromTensorflow(self.haar_model_file, self.haar_config_file)
+            self.detector = cv2.dnn.readNetFromTensorflow(self.ssd_model_file, self.ssd_config_file)
             self.min_confidence = 0.5  # minimum probability to filter weak detections
             print("[INFO] SSD detection model loaded.")
 
@@ -101,7 +101,7 @@ class ImgProcessor:
         :return: numpy.array()
         """
 
-        faces_array = np.array([])
+        faces_array = []
         if self.detector_type == "SSD":
             (h, w) = img.shape[:2]
             blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
@@ -133,8 +133,14 @@ class ImgProcessor:
                 for face in faces:
                     # get coordinates
                     x, y, width, height = face['box']
+                    # what a disaster ...
+                    # mtcnn predicts negative bounding boxes so we need to manually correct them
+                    if x < 0:
+                        x = 0
+                    if y < 0:
+                        y = 0
                     f = img[y:y+height, x:x+width]
-
+                    print(face)
                     right_eye_x, right_eye_y = face['keypoints']['right_eye'][0], face['keypoints']['right_eye'][1]
                     left_eye_x, left_eye_y = face['keypoints']['left_eye'][0], face['keypoints']['left_eye'][1]
 
@@ -142,7 +148,7 @@ class ImgProcessor:
                     delta_y = right_eye_y - left_eye_y
                     angle = np.arctan(delta_y / delta_x)
                     angle = (angle * 180) / np.pi
-                    print(face)
+
                     h, w = f.shape[:2]
                     # Calculating a center point of the image
                     # Integer division "//"" ensures that we receive whole numbers
@@ -155,7 +161,8 @@ class ImgProcessor:
                     #cv2.imshow('aligned_face', aligned_face)
                     #cv2.waitKey(0)
                     #cv2.destroyAllWindows()
-                    faces_array = np.append(faces_array, aligned_face)
+
+                    faces_array.append(aligned_face)
 
         if self.write == "true":
             for face in faces_array:
@@ -203,6 +210,6 @@ class ImgProcessor:
         label = np.argmax(prediction)
         #value = prediction[0][label] / 2
         if label == 1:
-            return '{"isAlive" : True}'
+            return {"isAlive": True}
         else:
-            return '{"isAlive": False}'
+            return {"isAlive": False}
