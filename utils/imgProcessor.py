@@ -70,7 +70,8 @@ class ImgProcessor:
         return embeds
 
     def rescale_img_percent(self, img, percent=50):
-        """ rescale_img_percent
+        """
+        rescale_img_percent
         Function for rescaling the image by some percent
         :param img: numpy.array()
         :param percent: int
@@ -83,7 +84,8 @@ class ImgProcessor:
         return cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
     def rescale_img(self, img: np.array([]), width: int, height: int):
-        """ rescale_img
+        """
+        rescale_img
         Function for rescaling the image to the desired size
         :param img: numpy.array()
         :param width: int
@@ -94,7 +96,8 @@ class ImgProcessor:
         return cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
 
     def detect(self, img: np.array([])) -> np.array([]):
-        """ detect
+        """
+        detect
         The actual function for performing detection based on configuration parameter.
         Crops all faces from the image and returns the numpy array containing all of them.
         :param img: numpy.array()
@@ -140,7 +143,7 @@ class ImgProcessor:
                     if y < 0:
                         y = 0
                     f = img[y:y+height, x:x+width]
-                    print(face)
+
                     right_eye_x, right_eye_y = face['keypoints']['right_eye'][0], face['keypoints']['right_eye'][1]
                     left_eye_x, left_eye_y = face['keypoints']['left_eye'][0], face['keypoints']['left_eye'][1]
 
@@ -171,7 +174,8 @@ class ImgProcessor:
         return faces_array
 
     def isAlive(self, img: np.array([])) -> dict:
-        """ isAlive
+        """
+        isAlive
         Function for performing prediction whether the face is real or fake.
         :param img: numpy.array()
         :return: dict

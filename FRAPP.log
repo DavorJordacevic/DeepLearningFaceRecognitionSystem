@@ -1,0 +1,11 @@
+2020-08-15 13:35:50,955 INFO     Allow GPU memory grow successful.
+2020-08-15 13:35:50,956 INFO     Parsing arguments successful.
+2020-08-15 13:35:50,967 INFO     Read descriptors successful.
+2020-08-15 13:35:51,684 INFO     Detect 1 Physical GPUs, 1 Logical GPUs.
+2020-08-15 13:35:55,471 INFO     Detection, anti-spoofing and recognition models initialized.
+2020-08-15 13:35:55,479 INFO     Make base successful.
+2020-08-15 13:35:55,482 INFO     FR APP IS RUNNING.
+2020-08-15 13:35:55,482 INFO     ------------------------------------------------------------
+2020-08-15 13:35:55,484 WARNING   * Debugger is active!
+2020-08-15 13:35:55,510 INFO      * Debugger PIN: 107-234-099
+2020-08-15 13:35:55,884 INFO     127.0.0.1 - - [15/Aug/2020 13:35:55] "[37mGET /healtcheck HTTP/1.1[0m" 200 -

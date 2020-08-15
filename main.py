@@ -1,7 +1,10 @@
 import os
 import cv2
 import json
+import flask
 import mtcnn
+import base64
+import logging
 import pyfiglet
 import argparse
 import numpy as np
@@ -10,7 +13,8 @@ from PIL import Image
 from utils import dbase
 from utils import config
 from flask import Flask, request
-from multiprocessing import Pool
+# from multiprocessing import Pool
+# from utils. utils import NumpyArrayEncoder
 from utils.imgProcessor import ImgProcessor
 from utils.recognitionEngine import RecognitionEngine
 
@@ -18,6 +22,10 @@ from utils.recognitionEngine import RecognitionEngine
 app = Flask('FR APP')
 
 def shutdown_server():
+    """
+    shutdown_server
+    The actual function for turning off the Flask server.
+    """
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
@@ -26,18 +34,29 @@ def shutdown_server():
 
 
 @app.route('/shutdown', methods=['POST'])
-def shutdown():
+def shutdown() -> dict:
+    """
+    shutdown
+    The endpoint for turning off the Flask server.
+    :return: dict
+    """
     shutdown_server()
-    return 'Server shutting down...'
+    return {'status': 'Server shut down.'}
 
 
 # Create a URL route in our application for "/@app.route('/healtcheck')"
 @app.route('/healtcheck')
-def healtcheck():
+def healtcheck() -> dict:
+    """
+    healtcheck
+    The function for performing the healtcheck of the whole system.
+    :return: dict
+    """
     return {
         'DB_status': 'Active' if db is not None else 'Inactive',
-        'opencv_version': cv2.__version__,
-        'tensorflow_version': tf.__version__,
+        'Flask_version': flask.__version__,
+        'Opencv_version': cv2.__version__,
+        'Tensorflow_version': tf.__version__,
         'GPU_available': 'Yes' if gpus else 'No'
     }
 
@@ -45,12 +64,24 @@ def healtcheck():
 # Create a URL route in our application for "/@app.route('/detect')"
 # The purpose of this endpoint is to extract faces from the providied imagage
 @app.route('/detect', methods=["POST"])
-def detect():
+def detect() -> dict:
+    """
+    detect
+    The function for performing detection based on configuration parameters.
+    Crops all faces from the image and returns the list containing all of them in numpy array format.
+    :param img: numpy.array()
+    :return: dict
+    """
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
     faces = imgProcessor.detect(img)
+    faces_b64 = []
+    for face in faces:
+        faces_b64.append(str(base64.b64encode(face)))
     return {
-        'Status':'SUCCESS'
+        'Status':'SUCCESS',
+        # Serialization
+        'faces': json.dumps(faces_b64)
     }
 
 
@@ -58,7 +89,12 @@ def detect():
 # Create a URL route in our application for "/@app.route('/isalive')"
 # The purpose of this endpoint is to classify if the provided face is real or fake
 @app.route('/isalive', methods=["POST"])
-def isAlive():
+def isAlive() -> dict:
+    """
+    isAlive
+    Performs the prediction if the face is real or fake (printed and video).
+    :return: dict
+    """
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
     return imgProcessor.isAlive(img)
@@ -68,7 +104,15 @@ def isAlive():
 # Create a URL route in our application for "/@app.route('/isalive')"
 # The purpose of this endpoint is to classify if the provided face is real or fake
 @app.route('/identification', methods=["POST"])
-def predict_rest():
+def predict_rest() -> dict:
+    """
+    predict_rest
+    The actual function for performing the recognition.
+    Extract all faces from the image, check if faces are real,
+    extract face descriptors and search the database using HNSW
+    and angular distance metric.
+    :return: dict
+    """
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
 
@@ -95,7 +139,13 @@ def predict_rest():
 # Create a URL route in our application for "/@app.route('/encode')"
 # The purpose of this endpoint is to encode the face
 @app.route('/encodeAndInsert', methods=["POST"])
-def encodeAndInsert():
+def encodeAndInsert() -> dict:
+    """
+    encodeAndInsert
+    The actual function for addding a new person into database.
+    After person is added successfully, make base is performed.
+    :return: dict
+    """
     name = request.form.get('name')
     #pil_image = Image.open(request.files['image']).convert('RGB')
     uploaded_files = request.files.getlist("files")
@@ -117,6 +167,9 @@ def encodeAndInsert():
 
 if __name__ == '__main__':
 
+    os.remove("FRAPP.log")
+    logging.basicConfig(filename='FRAPP.log', level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s')
+
     # allow GPU memory grow
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
@@ -126,6 +179,8 @@ if __name__ == '__main__':
         except RuntimeError as e:
             print(e)
 
+    logging.info('Allow GPU memory grow successful.')
+
     # Just some prints for healt check (can be deleted with any effect on the following code)
     print("OpenCV version: ", cv2.__version__)
     print("TensorFlow version: ", tf.__version__, "  GPU avaiable: ", tf.config.list_physical_devices('GPU'))
@@ -133,6 +188,7 @@ if __name__ == '__main__':
     # parse arguements
     parser = argparse.ArgumentParser(description='Process some arguments.')
     parser.add_argument('--cdp', type=str, help='the path to config file')
+    logging.info('Parsing arguments successful.')
 
     args = parser.parse_args()
     config_path = args.cdp
@@ -141,11 +197,14 @@ if __name__ == '__main__':
     db_conn, db = dbase.dbConnect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])
 
     ids, descriptors, personsids = dbase.readDescriptors(db)
+    logging.info('Read descriptors successful.')
 
     imgProcessor = ImgProcessor(cfg)
     recEngine = RecognitionEngine()
+    logging.info('Detection, anti-spoofing and recognition models initialized.')
 
     recEngine.makeBase(np.array(descriptors))
+    logging.info('Make base successful.')
 
     # Run the flask rest api
     # This can be updated to use multiple threads or processors
@@ -153,4 +212,7 @@ if __name__ == '__main__':
     # print starting text
     ascii_banner = pyfiglet.figlet_format("F R     A P P", font="slant")
     print(ascii_banner)
+
+    logging.info('FR APP IS RUNNING.')
+    logging.info('---------------'*4)
     app.run(debug=True)
