@@ -1,6 +1,6 @@
 # Welcome! My name is Davor and this is my thesis about Face Recognition.
 
-####Let's see what can Deep Learning achieve!
+#### Let's see what can Deep Learning achieve!
 
 <hr>
 

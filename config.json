@@ -12,6 +12,7 @@
   "face_recognition": "false",
   "face_reco_model_path": "",
   "write_to_file": "false",
+  "experimental" : "false",
   "debugMode": "false",
   "log": "./",
   "ssl_mode": "false",

@@ -1,6 +1,7 @@
 import os
 import cv2
 import json
+import time
 import flask
 import mtcnn
 import base64
@@ -116,6 +117,7 @@ def predict_rest() -> dict:
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
 
+    start = time.time()
     faces = imgProcessor.detect(img)
     response = []
 
@@ -129,6 +131,7 @@ def predict_rest() -> dict:
         else:
             response.append(personid)
 
+    logging.info('Identification time: ' + str(time.time()-start))
     return {
         'status': 'SUCCESS',
         'response': response

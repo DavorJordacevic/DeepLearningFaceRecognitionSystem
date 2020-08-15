@@ -22,6 +22,7 @@ class ImgProcessor:
         self.recognizer_path = cfg["face_reco_model_path"]
         self.threshold = cfg["threshold"]
         self.write = cfg["write_to_file"]
+        self.experimental = True if cfg["experimental"]=="true" else False
         self.landmarks = []
 
         if self.detector_type == "MTCNN":
@@ -38,6 +39,10 @@ class ImgProcessor:
             self.detector = cv2.dnn.readNetFromTensorflow(self.ssd_model_file, self.ssd_config_file)
             self.min_confidence = 0.5  # minimum probability to filter weak detections
             print("[INFO] SSD detection model loaded.")
+
+
+        self.net1 = cv2.dnn.readNetFromONNX('antispoofing0.onnx')
+        self.net2 = cv2.dnn.readNetFromONNX('antispoofing1.onnx')
 
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -144,6 +149,10 @@ class ImgProcessor:
                         y = 0
                     f = img[y:y+height, x:x+width]
 
+                    if (self.experimental):
+                        if (self.isAlive(f)['isAlive'] != True):
+                            continue
+
                     right_eye_x, right_eye_y = face['keypoints']['right_eye'][0], face['keypoints']['right_eye'][1]
                     left_eye_x, left_eye_y = face['keypoints']['left_eye'][0], face['keypoints']['left_eye'][1]
 
@@ -183,10 +192,6 @@ class ImgProcessor:
 
         img = cv2.resize(img, (80, 80))
 
-        net1 = cv2.dnn.readNetFromONNX('antispoofing0.onnx')
-        net2 = cv2.dnn.readNetFromONNX('antispoofing1.onnx')
-        net3 = cv2.dnn.readNetFromONNX('feathernetB.onnx')
-
         # investigate why this wont work!
         #net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
         #net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
@@ -201,18 +206,19 @@ class ImgProcessor:
         blob2 = cv2.dnn.blobFromImage(img, 1, size=(80, 80), swapRB=False, crop=False)
 
         # pass the blob through the network and obtain the predictions
-        net1.setInput(blob1)
-        net2.setInput(blob2)
+        self.net1.setInput(blob1)
+        self.net2.setInput(blob2)
         prediction = np.zeros((1, 3))
 
         # Runs forward pass to compute outputs of layers listed in outBlobNames.
         #start = time.time()
-        prediction += softmax(net1.forward())
-        prediction += softmax(net2.forward())
+        prediction += softmax(self.net1.forward())
+        prediction += softmax(self.net2.forward())
         #print(time.time()-start)
 
         label = np.argmax(prediction)
-        #value = prediction[0][label] / 2
+        value = prediction[0][label] / 2
+        print(prediction / 2)
         if label == 1:
             return {"isAlive": True}
         else:
