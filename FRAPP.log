@@ -1,8 +1,32 @@
-2020-08-15 19:51:32,469 INFO     Allow GPU memory grow successful.
-2020-08-15 19:51:32,469 INFO     Parsing arguments successful.
-2020-08-15 19:51:32,484 INFO     Read descriptors successful.
-2020-08-15 19:51:36,808 INFO     Detection, anti-spoofing and recognition models initialized.
-2020-08-15 19:51:36,816 INFO     Make base successful.
-2020-08-15 19:51:36,821 INFO     FR APP IS RUNNING.
-2020-08-15 19:51:36,821 INFO     ------------------------------------------------------------
-2020-08-15 19:51:36,822 INFO      * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2020-08-16 00:30:21,629 INFO     Allow GPU memory grow successful.
+2020-08-16 00:30:21,632 INFO     Parsing arguments successful.
+2020-08-16 00:30:21,677 INFO     Read descriptors successful.
+2020-08-16 00:30:37,910 INFO     Detection, anti-spoofing and recognition models initialized.
+2020-08-16 00:30:37,926 INFO     Make base successful.
+2020-08-16 00:30:37,932 INFO     FR APP IS RUNNING.
+2020-08-16 00:30:37,932 INFO     ------------------------------------------------------------
+2020-08-16 00:30:37,934 INFO      * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+2020-08-16 00:32:11,694 DEBUG    STREAM b'IHDR' 16 13
+2020-08-16 00:32:11,695 DEBUG    STREAM b'gAMA' 41 4
+2020-08-16 00:32:11,695 DEBUG    STREAM b'sRGB' 57 1
+2020-08-16 00:32:11,695 DEBUG    STREAM b'PLTE' 70 768
+2020-08-16 00:32:11,696 DEBUG    STREAM b'tRNS' 850 256
+2020-08-16 00:32:11,696 DEBUG    STREAM b'IDAT' 1118 8192
+2020-08-16 00:32:25,836 INFO     Identification time: 14.129456043243408
+2020-08-16 00:32:25,840 INFO     127.0.0.1 - - [16/Aug/2020 00:32:25] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-16 00:32:37,327 INFO     Identification time: 4.2631542682647705
+2020-08-16 00:32:37,328 INFO     127.0.0.1 - - [16/Aug/2020 00:32:37] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-16 00:32:54,925 INFO     Identification time: 4.221730709075928
+2020-08-16 00:32:54,928 INFO     127.0.0.1 - - [16/Aug/2020 00:32:54] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-16 00:32:55,019 INFO     Identification time: 6.585708856582642
+2020-08-16 00:32:55,024 INFO     127.0.0.1 - - [16/Aug/2020 00:32:55] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-16 00:32:55,069 INFO     Identification time: 5.501351594924927
+2020-08-16 00:32:55,071 INFO     127.0.0.1 - - [16/Aug/2020 00:32:55] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-16 00:33:06,989 INFO     Identification time: 1.1245462894439697
+2020-08-16 00:33:06,990 INFO     127.0.0.1 - - [16/Aug/2020 00:33:06] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-16 00:33:23,367 INFO     Identification time: 1.1058268547058105
+2020-08-16 00:33:23,368 INFO     127.0.0.1 - - [16/Aug/2020 00:33:23] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-16 00:33:36,761 INFO     Identification time: 0.3603553771972656
+2020-08-16 00:33:36,762 INFO     127.0.0.1 - - [16/Aug/2020 00:33:36] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-16 00:33:50,392 INFO     Identification time: 1.0067996978759766
+2020-08-16 00:33:50,393 INFO     127.0.0.1 - - [16/Aug/2020 00:33:50] "[37mPOST /identification HTTP/1.1[0m" 200 -
