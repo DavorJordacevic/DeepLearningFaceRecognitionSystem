@@ -45,4 +45,14 @@ rm -rf arc_mbv2.zip
 
 <hr>
 
+#### TODO
+* Fix face anti-spoofing
+* Docker
+* Add multithreading
+* Code refactor
+* Swagger
+* Speed up
+
+<hr>
+
 #### License
