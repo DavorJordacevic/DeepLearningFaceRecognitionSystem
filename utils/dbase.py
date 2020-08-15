@@ -1,4 +1,5 @@
 import uuid
+import logging
 import psycopg2
 import numpy as np
 import psycopg2.extras
@@ -20,12 +21,13 @@ def dbConnect(host, port, name, user, password):
         db.execute("SELECT version();")
         record = db.fetchone()
         #print("You are connected to - ", record,"\n")
-        print("DB connection OK\n")
+        #print("DB connection OK\n")
 
         psycopg2.extras.register_uuid()
 
     except (Exception, psycopg2.Error) as error :
-        print ("Error while connecting to PostgreSQL", error)
+        logging.info("Error while connecting to PostgreSQL" + str(error))
+        print("Error while connecting to PostgreSQL", error)
     '''
     finally:
         # used only for testing purposs

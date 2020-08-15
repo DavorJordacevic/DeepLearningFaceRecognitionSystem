@@ -9,7 +9,7 @@ from absl.flags import FLAGS
 from absl import app, flags, logging
 from scipy.special import softmax
 from arcface_tf2.modules.models import ArcFaceModel
-from arcface_tf2.modules.utils import set_memory_growth, load_yaml, l2_norm
+from arcface_tf2.modules.utils import load_yaml, l2_norm
 
 class ImgProcessor:
     def __init__(self, cfg):
@@ -18,59 +18,56 @@ class ImgProcessor:
         self.dnn_detector_path = cfg["face_det_model_path"]
         self.ssd_model_file = cfg["opencv_face_detector_uint8"]
         self.ssd_config_file = cfg["opencv_face_detector_pbtxt"]
-        self.recognizer = cfg["face_recognition"]
-        self.recognizer_path = cfg["face_reco_model_path"]
-        self.threshold = cfg["threshold"]
         self.write = cfg["write_to_file"]
         self.experimental = True if cfg["experimental"]=="true" else False
         self.landmarks = []
 
         if self.detector_type == "MTCNN":
             if self.dnn_detector_path == "":
-                print("[INFO] Loading MTCNN detection model...")
                 self.detector = mtcnn.MTCNN()
-                print("[INFO] MTCNN detection model loaded.")
-                print("MTCNN version: ", mtcnn.__version__)
+                #print("[INFO] MTCNN detection model loaded.")
 
         if self.detector_type == "SSD":
             # load our serialized model from disk
-            print("[INFO] Loading SSD detection model...")
             # Here we need to read our pre-trained neural net created using Tensorflow
             self.detector = cv2.dnn.readNetFromTensorflow(self.ssd_model_file, self.ssd_config_file)
             self.min_confidence = 0.5  # minimum probability to filter weak detections
-            print("[INFO] SSD detection model loaded.")
+            #print("[INFO] SSD detection model loaded.")
 
 
         self.net1 = cv2.dnn.readNetFromONNX('antispoofing0.onnx')
         self.net2 = cv2.dnn.readNetFromONNX('antispoofing1.onnx')
 
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+        # set config and checkpoints path
+        self.face_reco_cfg_path = load_yaml(cfg['face_reco_cfg_path'])
+        self.face_reco_checkpoints_path = cfg['face_reco_checkpoints_path']
 
-        logger = tf.get_logger()
-        logger.disabled = True
-        logger.setLevel(logging.FATAL)
-        set_memory_growth()
-
-        self.cfg = load_yaml('./arcface_tf2/configs/arc_mbv2.yaml')
-
-        self.model = ArcFaceModel(size=self.cfg['input_size'],
-                             backbone_type=self.cfg['backbone_type'],
+        # initialize the ArcFace model
+        self.model = ArcFaceModel(size=self.face_reco_cfg_path['input_size'],
+                             backbone_type=self.face_reco_cfg_path['backbone_type'],
                              training=False)
 
-        ckpt_path = tf.train.latest_checkpoint('./arcface_tf2/checkpoints/' + self.cfg['sub_name'])
+        # load model weights
+        ckpt_path = tf.train.latest_checkpoint(self.face_reco_checkpoints_path + self.face_reco_cfg_path['sub_name'])
         if ckpt_path is not None:
-            print("[*] load ckpt from {}".format(ckpt_path))
+            #print("[INFO] Loading embeddings model.")
             self.model.load_weights(ckpt_path)
         else:
-            print("[*] Cannot find ckpt from {}.".format(ckpt_path))
+            #print("[ERROR] Cannot find embeddings model.")
             exit()
 
     def encode(self, img: np.array([])) -> np.array([]):
-        img = cv2.resize(img, (self.cfg['input_size'], self.cfg['input_size']))
+        """
+        encode
+        Function for extracting face embeddings using ArcFace model
+        :param img: numpy.array()
+        :return: img: numpy.array()
+        """
+        img = cv2.resize(img, (self.face_reco_cfg_path['input_size'], self.face_reco_cfg_path['input_size']))
         img = img.astype(np.float32) / 255.
         if len(img.shape) == 3:
             img = np.expand_dims(img, 0)
+        # extract face embeddings and normalize
         embeds = l2_norm(self.model(img))
         return embeds
 
@@ -82,7 +79,6 @@ class ImgProcessor:
         :param percent: int
         :return: img: numpy.array()
         """
-
         width = int(img.shape[1] * percent / 100)
         height = int(img.shape[0] * percent / 100)
         dim = (width, height)
@@ -97,7 +93,6 @@ class ImgProcessor:
         :param height: int
         :return: img: numpy.array()
         """
-
         return cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
 
     def detect(self, img: np.array([])) -> np.array([]):
@@ -148,7 +143,6 @@ class ImgProcessor:
                     if y < 0:
                         y = 0
                     f = img[y:y+height, x:x+width]
-
                     if (self.experimental):
                         if (self.isAlive(f)['isAlive'] != True):
                             continue
@@ -173,7 +167,7 @@ class ImgProcessor:
                     #cv2.imshow('aligned_face', aligned_face)
                     #cv2.waitKey(0)
                     #cv2.destroyAllWindows()
-
+                    #cv2.imwrite('aligned_face.jpg', cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB))
                     faces_array.append(aligned_face)
 
         if self.write == "true":

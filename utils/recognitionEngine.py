@@ -4,8 +4,9 @@ from utils import dbase
 from n2 import HnswIndex
 
 class RecognitionEngine:
-    def __init__(self):
+    def __init__(self, threshold):
         self.recognizer = None
+        self.threshold = threshold
 
     def makeBase(self, descriptors: []) -> str:
 
@@ -21,7 +22,7 @@ class RecognitionEngine:
     def identification(self, ids: [], descriptor: [], personids: []) -> dict:
         idx = self.recognizer.search_by_vector(np.array(descriptor).flatten(), 1, include_distances=True)
 
-        if (idx[0][1] < 0.5):
+        if (idx[0][1] < self.threshold):
             personID = personids[idx[0][0]]
         else:
             personID = None

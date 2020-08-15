@@ -1,18 +1,8 @@
-2020-08-15 16:34:03,936 INFO     Allow GPU memory grow successful.
-2020-08-15 16:34:03,937 INFO     Parsing arguments successful.
-2020-08-15 16:34:03,946 INFO     Read descriptors successful.
-2020-08-15 16:34:04,610 INFO     Detect 1 Physical GPUs, 1 Logical GPUs.
-2020-08-15 16:34:08,159 INFO     Detection, anti-spoofing and recognition models initialized.
-2020-08-15 16:34:08,168 INFO     Make base successful.
-2020-08-15 16:34:08,171 INFO     FR APP IS RUNNING.
-2020-08-15 16:34:08,171 INFO     ------------------------------------------------------------
-2020-08-15 16:34:08,173 WARNING   * Debugger is active!
-2020-08-15 16:34:08,196 INFO      * Debugger PIN: 107-234-099
-2020-08-15 16:34:10,902 INFO     Identification time: 2.6976475715637207
-2020-08-15 16:34:10,903 INFO     127.0.0.1 - - [15/Aug/2020 16:34:10] "[37mPOST /identification HTTP/1.1[0m" 200 -
-2020-08-15 16:34:14,719 INFO     Identification time: 0.21943950653076172
-2020-08-15 16:34:14,719 INFO     127.0.0.1 - - [15/Aug/2020 16:34:14] "[37mPOST /identification HTTP/1.1[0m" 200 -
-2020-08-15 16:34:22,478 INFO     Identification time: 0.3831307888031006
-2020-08-15 16:34:22,478 INFO     127.0.0.1 - - [15/Aug/2020 16:34:22] "[37mPOST /identification HTTP/1.1[0m" 200 -
-2020-08-15 16:34:24,580 INFO     Identification time: 0.22408199310302734
-2020-08-15 16:34:24,580 INFO     127.0.0.1 - - [15/Aug/2020 16:34:24] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-15 19:51:32,469 INFO     Allow GPU memory grow successful.
+2020-08-15 19:51:32,469 INFO     Parsing arguments successful.
+2020-08-15 19:51:32,484 INFO     Read descriptors successful.
+2020-08-15 19:51:36,808 INFO     Detection, anti-spoofing and recognition models initialized.
+2020-08-15 19:51:36,816 INFO     Make base successful.
+2020-08-15 19:51:36,821 INFO     FR APP IS RUNNING.
+2020-08-15 19:51:36,821 INFO     ------------------------------------------------------------
+2020-08-15 19:51:36,822 INFO      * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)

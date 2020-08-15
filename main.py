@@ -14,13 +14,13 @@ from PIL import Image
 from utils import dbase
 from utils import config
 from flask import Flask, request
-# from multiprocessing import Pool
-# from utils. utils import NumpyArrayEncoder
 from utils.imgProcessor import ImgProcessor
 from utils.recognitionEngine import RecognitionEngine
 
+
 # Create the application instance
 app = Flask('FR APP')
+
 
 def shutdown_server():
     """
@@ -78,6 +78,7 @@ def detect() -> dict:
     faces = imgProcessor.detect(img)
     faces_b64 = []
     for face in faces:
+        # convert image to butes (base64 encoding)
         faces_b64.append(str(base64.b64encode(face)))
     return {
         'Status':'SUCCESS',
@@ -117,15 +118,19 @@ def predict_rest() -> dict:
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
 
+    # detect faces
     start = time.time()
     faces = imgProcessor.detect(img)
     response = []
 
     for face in faces:
+        # encode face
         descriptor = imgProcessor.encode(face)
 
+        # find persoin id in the database
         personid = recEngine.identification(ids, descriptor, personsids)
         if (personid['personid'] is not None):
+            # find name in the database
             person = dbase.findPersonByID(db, db_conn, personid['personid'])
             response.append(person)
         else:
@@ -156,7 +161,10 @@ def encodeAndInsert() -> dict:
     for image in uploaded_files:
         pil_image = Image.open(image).convert('RGB')
         img = np.array(pil_image)
+        # detect faace
         faces = imgProcessor.detect(img)
+        if len(faces) != 1:
+            return {'status': 'ERROR'}
         embeds.append(imgProcessor.encode(np.array(faces[0])))
 
     result = dbase.receiveDescriptors(db, db_conn, name, embeds)
@@ -170,23 +178,37 @@ def encodeAndInsert() -> dict:
 
 if __name__ == '__main__':
 
+    # set environment variables
+    os.environ['FLASK_ENV'] = 'development'
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+    # remove old log file
     os.remove("FRAPP.log")
+
+    # turn off tensorflow logger
+    logger = tf.get_logger()
+    logger.disabled = True
+    logger.setLevel(logging.FATAL)
+
+    # open file for logging
     logging.basicConfig(filename='FRAPP.log', level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s')
 
     # allow GPU memory grow
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
         try:
+            os.environ['CUDA_VISIBLE_DEVICES'] = '0'
             for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
         except RuntimeError as e:
+            logging.info(str(e))
             print(e)
 
     logging.info('Allow GPU memory grow successful.')
 
-    # Just some prints for healt check (can be deleted with any effect on the following code)
-    print("OpenCV version: ", cv2.__version__)
-    print("TensorFlow version: ", tf.__version__, "  GPU avaiable: ", tf.config.list_physical_devices('GPU'))
+    # Just some prints for health check (can be deleted with any effect on the following code)
+    # print("OpenCV version: ", cv2.__version__)
+    # print("TensorFlow version: ", tf.__version__, "  GPU avaiable: ", tf.config.list_physical_devices('GPU'))
 
     # parse arguements
     parser = argparse.ArgumentParser(description='Process some arguments.')
@@ -203,7 +225,7 @@ if __name__ == '__main__':
     logging.info('Read descriptors successful.')
 
     imgProcessor = ImgProcessor(cfg)
-    recEngine = RecognitionEngine()
+    recEngine = RecognitionEngine(cfg['threshold'])
     logging.info('Detection, anti-spoofing and recognition models initialized.')
 
     recEngine.makeBase(np.array(descriptors))
@@ -218,4 +240,5 @@ if __name__ == '__main__':
 
     logging.info('FR APP IS RUNNING.')
     logging.info('---------------'*4)
-    app.run(debug=True)
+    # threaded=False, processes=3
+    app.run(debug=False)
