@@ -9,6 +9,7 @@ conda install -c conda-forge pyfiglet
 conda install -c conda-forge mtcnn
 conda install -c anaconda pillow
 conda install -c anaconda flask
+conda install -c anaconda flask-cors
 pip3 install Cython pip3 install Cython
 pip3 install n2
 pip3 install googledrivedownloader

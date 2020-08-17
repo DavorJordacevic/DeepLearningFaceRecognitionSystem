@@ -14,13 +14,18 @@ from PIL import Image
 from utils import dbase
 from utils import config
 from flask import Flask, request
+from flask_cors import CORS, cross_origin
 from utils.imgProcessor import ImgProcessor
 from utils.recognitionEngine import RecognitionEngine
 
 
+
 # Create the application instance
 app = Flask('FR APP')
+app.config['CORS_HEADERS'] = 'Content-Type'
+cors = CORS(app)
 
+ids, descriptors, personsids = [], [], []
 
 def shutdown_server():
     """
@@ -106,6 +111,7 @@ def isAlive() -> dict:
 # Create a URL route in our application for "/@app.route('/isalive')"
 # The purpose of this endpoint is to classify if the provided face is real or fake
 @app.route('/identification', methods=["POST"])
+@cross_origin()
 def predict_rest() -> dict:
     """
     predict_rest
@@ -155,7 +161,6 @@ def encodeAndInsert() -> dict:
     :return: dict
     """
     name = request.form.get('name')
-    #pil_image = Image.open(request.files['image']).convert('RGB')
     uploaded_files = request.files.getlist("files")
     embeds = []
     for image in uploaded_files:
@@ -171,6 +176,7 @@ def encodeAndInsert() -> dict:
     if result['status'] != 'SUCCESS':
         return {'status': 'ERROR'}
 
+    global personsids
     ids, descriptors, personsids = dbase.readDescriptors(db)
     return recEngine.makeBase(descriptors)
 
@@ -221,15 +227,17 @@ if __name__ == '__main__':
     cfg = config.readConfig(config_path)
     db_conn, db = dbase.dbConnect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])
 
-    ids, descriptors, personsids = dbase.readDescriptors(db)
-    logging.info('Read descriptors successful.')
-
     imgProcessor = ImgProcessor(cfg)
     recEngine = RecognitionEngine(cfg['threshold'])
-    logging.info('Detection, anti-spoofing and recognition models initialized.')
+    logging.info('All models initialized successfully.')
 
-    recEngine.makeBase(np.array(descriptors))
-    logging.info('Make base successful.')
+    try:
+        ids, descriptors, personsids = dbase.readDescriptors(db)
+        logging.info('Read descriptors successful.')
+        recEngine.makeBase(np.array(descriptors))
+        logging.info('Make base successful.')
+    except:
+         logging.info('The database is empty.')
 
     # Run the flask rest api
     # This can be updated to use multiple threads or processors

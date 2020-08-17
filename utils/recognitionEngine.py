@@ -20,8 +20,8 @@ class RecognitionEngine:
         return {'status': 'SUCCESS'}
 
     def identification(self, ids: [], descriptor: [], personids: []) -> dict:
-        idx = self.recognizer.search_by_vector(np.array(descriptor).flatten(), 1, include_distances=True)
-
+        idx = self.recognizer.search_by_vector(np.array(descriptor).flatten(), 2, 1, include_distances=True)
+        print(idx[0][1])
         if (idx[0][1] < self.threshold):
             personID = personids[idx[0][0]]
         else:

@@ -56,6 +56,7 @@ def readDescriptors(db):
     ids = []
     descriptors = []
     personsids = []
+
     if records != []:
 
         for r in records:
