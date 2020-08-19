@@ -1,5 +1,6 @@
 import os
 import cv2
+import sys
 import json
 import time
 import flask
@@ -8,6 +9,7 @@ import base64
 import logging
 import pyfiglet
 import argparse
+import warnings
 import numpy as np
 import tensorflow as tf
 from PIL import Image
@@ -19,12 +21,17 @@ from utils.imgProcessor import ImgProcessor
 from utils.recognitionEngine import RecognitionEngine
 
 
+# disable warnings
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
 
 # Create the application instance
 app = Flask('FR APP')
 app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png']
 cors = CORS(app)
 
+# initialize empty lists
 ids, descriptors, personsids = [], [], []
 
 def shutdown_server():
@@ -161,8 +168,11 @@ def encodeAndInsert() -> dict:
     :return: dict
     """
     name = request.form.get('name')
-    uploaded_files = request.files.getlist("files")
+    uploaded_files = request.files.getlist("images")
+
     embeds = []
+    if uploaded_files == []:
+        return {"status": "ERROR"}
     for image in uploaded_files:
         pil_image = Image.open(image).convert('RGB')
         img = np.array(pil_image)
@@ -249,4 +259,4 @@ if __name__ == '__main__':
     logging.info('FR APP IS RUNNING.')
     logging.info('---------------'*4)
     # threaded=False, processes=3
-    app.run(debug=False)
+    app.run(debug=True, host='127.0.0.1', port=5000)
