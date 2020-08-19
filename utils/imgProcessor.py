@@ -1,15 +1,18 @@
 import os
 import cv2
+import sys
 import uuid
 import time
 import mtcnn
 import numpy as np
 import tensorflow as tf
-from absl.flags import FLAGS
-from absl import app, flags, logging
 from scipy.special import softmax
 from arcface_tf2.modules.models import ArcFaceModel
 from arcface_tf2.modules.utils import load_yaml, l2_norm
+sys.path.append('./retinaface_tf2/')
+from retinaface_tf2.modules.models import RetinaFaceModel
+from retinaface_tf2.modules.utils import pad_input_image, recover_pad_output
+
 
 class ImgProcessor:
     def __init__(self, cfg):
@@ -34,6 +37,26 @@ class ImgProcessor:
             self.min_confidence = 0.5  # minimum probability to filter weak detections
             #print("[INFO] SSD detection model loaded.")
 
+        if self.detector_type == "RetinaFace":
+            # set config and checkpoints path
+            self.face_det_cfg_path = load_yaml(cfg['face_det_cfg_path'])
+            self.face_det_checkpoints_path = cfg['face_det_checkpoints_path']
+            # load our serialized model from disk
+            # Here we need to read our pre-trained neural net created using Tensorflow 2
+            self.detector = RetinaFaceModel(self.face_det_cfg_path, training=False,
+                                            iou_th=cfg["face_det_iou_th"], score_th=cfg["face_det_score_th"])
+
+            self.face_det_down_scale_factor = cfg["face_det_down_scale_factor"]
+            # load checkpoint
+            checkpoint_dir = self.face_det_checkpoints_path + self.face_det_cfg_path['sub_name']
+            checkpoint = tf.train.Checkpoint(model=self.detector)
+            if tf.train.latest_checkpoint(checkpoint_dir):
+                checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
+                #print("[*] load ckpt from {}.".format(tf.train.latest_checkpoint(checkpoint_dir)))
+            else:
+                #print("[*] Cannot find ckpt from {}.".format(checkpoint_dir))
+                exit()
+            #print("[INFO] RetinaFace detection model loaded.")
 
         self.net1 = cv2.dnn.readNetFromONNX('antispoofing0.onnx')
         self.net2 = cv2.dnn.readNetFromONNX('antispoofing1.onnx')
@@ -105,6 +128,7 @@ class ImgProcessor:
         """
 
         faces_array = []
+
         if self.detector_type == "SSD":
             (h, w) = img.shape[:2]
             blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
@@ -149,6 +173,57 @@ class ImgProcessor:
 
                     right_eye_x, right_eye_y = face['keypoints']['right_eye'][0], face['keypoints']['right_eye'][1]
                     left_eye_x, left_eye_y = face['keypoints']['left_eye'][0], face['keypoints']['left_eye'][1]
+
+                    delta_x = right_eye_x - left_eye_x
+                    delta_y = right_eye_y - left_eye_y
+                    angle = np.arctan(delta_y / delta_x)
+                    angle = (angle * 180) / np.pi
+
+                    h, w = f.shape[:2]
+                    # Calculating a center point of the image
+                    # Integer division "//"" ensures that we receive whole numbers
+                    center = (w // 2, h // 2)
+                    # Defining a matrix M and calling
+                    # cv2.getRotationMatrix2D method
+                    M = cv2.getRotationMatrix2D(center, (angle), 1.0)
+                    # Applying the rotation to our image using the
+                    aligned_face = cv2.warpAffine(f, M, (w, h))
+                    #cv2.imshow('aligned_face', aligned_face)
+                    #cv2.waitKey(0)
+                    #cv2.destroyAllWindows()
+                    #cv2.imwrite('aligned_face.jpg', cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB))
+                    faces_array.append(aligned_face)
+
+        if self.detector_type == "RetinaFace":
+            img_height, img_width, _ = img.shape
+
+            if self.face_det_down_scale_factor < 1.0:
+                img = cv2.resize(img, (0, 0), fx=self.face_det_down_scale_factor,
+                                 fy=self.face_det_down_scale_factor, interpolation=cv2.INTER_LINEAR)
+
+            # pad input image to avoid unmatched shape problem
+            img, pad_params = pad_input_image(img, max_steps=max(self.face_det_cfg_path["steps"]))
+            # start = time.time()
+            faces = self.detector(img[np.newaxis, ...]).numpy()
+            # print(time.time()-start)
+            # recover padding effect
+            faces = recover_pad_output(faces, pad_params)
+
+            for face in range(len(faces)):
+                # get coordinates
+                x1, y1, x2, y2 = int(faces[face][0] * img_width), int(faces[face][1] * img_height), \
+                                 int(faces[face][2] * img_width), int(faces[face][3] * img_height)
+
+                f = img[y1:y2, x1:x2]
+
+                if (self.experimental):
+                    if (self.isAlive(f)['isAlive'] != True):
+                        continue
+
+                # landmark
+                if faces[face][14] > 0:
+                    right_eye_x, right_eye_y = int(faces[face][4] * img_width), int(faces[face][5] * img_height)
+                    left_eye_x, left_eye_y = int(faces[face][6] * img_width), int(faces[face][7] * img_height)
 
                     delta_x = right_eye_x - left_eye_x
                     delta_y = right_eye_y - left_eye_y
