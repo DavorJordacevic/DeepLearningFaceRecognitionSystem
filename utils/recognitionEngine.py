@@ -1,6 +1,5 @@
 import time
 import numpy as np
-from utils import dbase
 from n2 import HnswIndex
 
 class RecognitionEngine:
@@ -21,7 +20,7 @@ class RecognitionEngine:
 
     def identification(self, ids: [], descriptor: [], personids: []) -> dict:
         idx = self.recognizer.search_by_vector(np.array(descriptor).flatten(), 2, 1, include_distances=True)
-        print(idx[0][1])
+        #print(idx[0][1])
         if (idx[0][1] < self.threshold):
             personID = personids[idx[0][0]]
         else:
