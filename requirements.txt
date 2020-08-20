@@ -14,6 +14,8 @@ pip3 install Cython pip3 install Cython
 pip3 install n2
 pip3 install googledrivedownloader
 
+conda install -c anaconda cupy
+
 wget https://raw.githubusercontent.com/opencv/opencv_extra/master/testdata/dnn/opencv_face_detector.pbtxt
 wget https://github.com/spmallick/learnopencv/raw/master/AgeGender/opencv_face_detector_uint8.pb
 

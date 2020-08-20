@@ -6,6 +6,7 @@ import time
 import mtcnn
 import numpy as np
 import tensorflow as tf
+from numba import njit, vectorize
 from scipy.special import softmax
 from arcface_tf2.modules.models import ArcFaceModel
 from arcface_tf2.modules.utils import load_yaml, l2_norm
@@ -86,7 +87,7 @@ class ImgProcessor:
         :param img: numpy.array()
         :return: img: numpy.array()
         """
-        img = cv2.resize(img, (self.face_reco_cfg_path['input_size'], self.face_reco_cfg_path['input_size']))
+        img = self.resize_img(np.array(img), self.face_reco_cfg_path['input_size'], self.face_reco_cfg_path['input_size'], 0, 0, cv2.INTER_LINEAR)
         img = img.astype(np.float32) / 255.
         if len(img.shape) == 3:
             img = np.expand_dims(img, 0)
@@ -94,7 +95,7 @@ class ImgProcessor:
         embeds = l2_norm(self.model(img))
         return embeds
 
-    def rescale_img_percent(self, img, percent=50):
+    def rescale_img_percent(self, img, percent=50) -> np.array([]):
         """
         rescale_img_percent
         Function for rescaling the image by some percent
@@ -107,16 +108,19 @@ class ImgProcessor:
         dim = (width, height)
         return cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
-    def rescale_img(self, img: np.array([]), width: int, height: int):
+    def resize_img(self, img: np.array([]), width: int, height: int, fx: int, fy: int, interpolation) -> np.array([]):
         """
         rescale_img
         Function for rescaling the image to the desired size
         :param img: numpy.array()
         :param width: int
         :param height: int
+        :param fx: int
+        :param fy: int
+        :param interpolation: cv2.INTER_LINEAR
         :return: img: numpy.array()
         """
-        return cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
+        return cv2.resize(img, (width, height), fx, fy, interpolation)
 
     def detect(self, img: np.array([])) -> np.array([]):
         """
@@ -198,8 +202,7 @@ class ImgProcessor:
             img_height, img_width, _ = img.shape
 
             if self.face_det_down_scale_factor < 1.0:
-                img = cv2.resize(img, (0, 0), fx=self.face_det_down_scale_factor,
-                                 fy=self.face_det_down_scale_factor, interpolation=cv2.INTER_LINEAR)
+                img = self.resize_img(img, 0, 0, self.face_det_down_scale_factor, self.face_det_down_scale_factor, cv2.INTER_LINEAR)
 
             # pad input image to avoid unmatched shape problem
             img, pad_params = pad_input_image(img, max_steps=max(self.face_det_cfg_path["steps"]))

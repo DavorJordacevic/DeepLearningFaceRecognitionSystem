@@ -2,10 +2,12 @@ import time
 import numpy as np
 from n2 import HnswIndex
 
+
 class RecognitionEngine:
     def __init__(self, threshold):
         self.recognizer = None
         self.threshold = threshold
+
 
     def makeBase(self, descriptors: []) -> str:
 
