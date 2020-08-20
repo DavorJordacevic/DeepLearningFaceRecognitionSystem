@@ -141,14 +141,17 @@ def predict_rest() -> dict:
         descriptor = imgProcessor.encode(face)
 
         # find persoin id in the database
-        personid = recEngine.identification(ids, descriptor, personsids)
-        if (personid['personid'] is not None):
-            # find name in the database
-            person = dbase.findPersonByID(db, db_conn, personid['personid'])
-            response.append(person)
+        global ids, descriptors, personsids
+        if personsids != []:
+            personid = recEngine.identification(descriptor, personsids)
+            if (personid['personid'] is not None):
+                # find name in the database
+                person = dbase.findPersonByID(db, db_conn, personid['personid'])
+                response.append(person)
+            else:
+                response.append(personid)
         else:
-            response.append(personid)
-
+            response = 'Empty database'
     logging.info('Identification time: ' + str(time.time()-start))
     return {
         'status': 'SUCCESS',
@@ -163,7 +166,7 @@ def predict_rest() -> dict:
 def encodeAndInsert() -> dict:
     """
     encodeAndInsert
-    The actual function for addding a new person into database.
+    The actual function for adding a new person into database.
     After person is added successfully, make base is performed.
     :return: dict
     """
@@ -175,9 +178,8 @@ def encodeAndInsert() -> dict:
         return {"status": "ERROR"}
     for image in uploaded_files:
         pil_image = Image.open(image).convert('RGB')
-        img = np.array(pil_image)
         # detect faace
-        faces = imgProcessor.detect(img)
+        faces = imgProcessor.detect(np.array(pil_image))
         if len(faces) != 1:
             return {'status': 'ERROR'}
         embeds.append(imgProcessor.encode(np.array(faces[0])))
@@ -186,7 +188,7 @@ def encodeAndInsert() -> dict:
     if result['status'] != 'SUCCESS':
         return {'status': 'ERROR'}
 
-    global personsids
+    global ids, descriptors, personsids
     ids, descriptors, personsids = dbase.readDescriptors(db)
     return recEngine.makeBase(descriptors)
 

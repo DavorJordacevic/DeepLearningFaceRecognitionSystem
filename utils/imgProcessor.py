@@ -217,6 +217,11 @@ class ImgProcessor:
                 x1, y1, x2, y2 = int(faces[face][0] * img_width), int(faces[face][1] * img_height), \
                                  int(faces[face][2] * img_width), int(faces[face][3] * img_height)
 
+                if x1 < 0:
+                    x1 = 0
+                if y1 < 0:
+                    y1 = 0
+
                 f = img[y1:y2, x1:x2]
 
                 if (self.experimental):

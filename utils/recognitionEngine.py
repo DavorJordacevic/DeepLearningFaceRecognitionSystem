@@ -20,7 +20,7 @@ class RecognitionEngine:
         self.recognizer.save('index.hnsw')
         return {'status': 'SUCCESS'}
 
-    def identification(self, ids: [], descriptor: [], personids: []) -> dict:
+    def identification(self, descriptor: [], personids: []) -> dict:
         idx = self.recognizer.search_by_vector(np.array(descriptor).flatten(), 2, 1, include_distances=True)
         #print(idx[0][1])
         if (idx[0][1] < self.threshold):
