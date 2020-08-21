@@ -1,42 +1,42 @@
-import os
 import cv2
 import sys
 import uuid
-import time
 import mtcnn
 import numpy as np
 import tensorflow as tf
-from numba import njit, vectorize
 from scipy.special import softmax
+sys.path.append('./retinaface_tf2/')
 from arcface_tf2.modules.models import ArcFaceModel
 from arcface_tf2.modules.utils import load_yaml, l2_norm
-sys.path.append('./retinaface_tf2/')
 from retinaface_tf2.modules.models import RetinaFaceModel
 from retinaface_tf2.modules.utils import pad_input_image, recover_pad_output
 
 
 class ImgProcessor:
     def __init__(self, cfg):
-
+        """
+        __init__
+        Initialize ImgProcessor with config file
+        :param cfg: {}
+        """
         self.detector_type = cfg["face_detector"]
         self.dnn_detector_path = cfg["face_det_model_path"]
         self.ssd_model_file = cfg["opencv_face_detector_uint8"]
         self.ssd_config_file = cfg["opencv_face_detector_pbtxt"]
         self.write = cfg["write_to_file"]
-        self.experimental = True if cfg["experimental"]=="true" else False
-        self.landmarks = []
+        self.experimental = True if cfg["experimental"] == "true" else False
 
         if self.detector_type == "MTCNN":
             if self.dnn_detector_path == "":
                 self.detector = mtcnn.MTCNN()
-                #print("[INFO] MTCNN detection model loaded.")
+                # print("[INFO] MTCNN detection model loaded.")
 
         if self.detector_type == "SSD":
             # load our serialized model from disk
             # Here we need to read our pre-trained neural net created using Tensorflow
             self.detector = cv2.dnn.readNetFromTensorflow(self.ssd_model_file, self.ssd_config_file)
             self.min_confidence = 0.5  # minimum probability to filter weak detections
-            #print("[INFO] SSD detection model loaded.")
+            # print("[INFO] SSD detection model loaded.")
 
         if self.detector_type == "RetinaFace":
             # set config and checkpoints path
@@ -53,11 +53,11 @@ class ImgProcessor:
             checkpoint = tf.train.Checkpoint(model=self.detector)
             if tf.train.latest_checkpoint(checkpoint_dir):
                 checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
-                #print("[*] load ckpt from {}.".format(tf.train.latest_checkpoint(checkpoint_dir)))
+                # print("[*] load ckpt from {}.".format(tf.train.latest_checkpoint(checkpoint_dir)))
             else:
-                #print("[*] Cannot find ckpt from {}.".format(checkpoint_dir))
+                # print("[*] Cannot find ckpt from {}.".format(checkpoint_dir))
                 exit()
-            #print("[INFO] RetinaFace detection model loaded.")
+            # print("[INFO] RetinaFace detection model loaded.")
 
         if self.experimental:
             self.net1 = cv2.dnn.readNetFromONNX('antispoofing0.onnx')
@@ -75,10 +75,10 @@ class ImgProcessor:
         # load model weights
         ckpt_path = tf.train.latest_checkpoint(self.face_reco_checkpoints_path + self.face_reco_cfg_path['sub_name'])
         if ckpt_path is not None:
-            #print("[INFO] Loading embeddings model.")
+            # print("[INFO] Loading embeddings model.")
             self.model.load_weights(ckpt_path)
         else:
-            #print("[ERROR] Cannot find embeddings model.")
+            # print("[ERROR] Cannot find embeddings model.")
             exit()
 
     def encode(self, img: np.array([])) -> np.array([]):
@@ -164,12 +164,12 @@ class ImgProcessor:
                     x, y, width, height = face['box']
                     # what a disaster ...
                     # mtcnn predicts negative bounding boxes so we need to manually correct them
-                    x1 = 0 if x1 < 0 else x1
-                    y1 = 0 if y1 < 0 else y1
+                    x = 0 if x < 0 else x
+                    y = 0 if y < 0 else y
 
                     f = img[y:y+height, x:x+width]
-                    if (self.experimental):
-                        if (self.isAlive(f)['isAlive'] != True):
+                    if self.experimental:
+                        if not self.isAlive(f)['isAlive']:
                             continue
 
                     right_eye_x, right_eye_y = face['keypoints']['right_eye'][0], face['keypoints']['right_eye'][1]
@@ -212,8 +212,8 @@ class ImgProcessor:
 
                 f = img[y1:y2, x1:x2]
 
-                if (self.experimental):
-                    if (self.isAlive(f)['isAlive'] != True):
+                if self.experimental:
+                    if not self.isAlive(f)['isAlive']:
                         continue
 
                 # landmark

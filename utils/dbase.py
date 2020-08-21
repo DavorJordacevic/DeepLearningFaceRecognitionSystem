@@ -51,7 +51,6 @@ def readDescriptors(db):
     query = 'SELECT f."ID", f.descriptor, f.personid FROM public.faces f'
     db.execute(query)
     records = db.fetchall()
-    #records = np.array(records, dtype='object')
 
     ids = []
     descriptors = []
