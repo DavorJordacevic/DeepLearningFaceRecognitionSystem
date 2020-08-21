@@ -59,8 +59,9 @@ class ImgProcessor:
                 exit()
             #print("[INFO] RetinaFace detection model loaded.")
 
-        self.net1 = cv2.dnn.readNetFromONNX('antispoofing0.onnx')
-        self.net2 = cv2.dnn.readNetFromONNX('antispoofing1.onnx')
+        if self.experimental:
+            self.net1 = cv2.dnn.readNetFromONNX('antispoofing0.onnx')
+            self.net2 = cv2.dnn.readNetFromONNX('antispoofing1.onnx')
 
         # set config and checkpoints path
         self.face_reco_cfg_path = load_yaml(cfg['face_reco_cfg_path'])
@@ -138,9 +139,7 @@ class ImgProcessor:
             blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
             self.detector.setInput(blob)
             # Runs forward pass to compute outputs of layers listed in outBlobNames.
-            # start = time.time()
             detections = self.detector.forward()
-            # print(time.time()-start)
 
             for i in range(0, detections.shape[2]):
                 # extract the confidence (probability) associated with the prediction
@@ -157,19 +156,17 @@ class ImgProcessor:
                     faces_array = np.append(faces_array, f)
 
         if self.detector_type == "MTCNN":
+            # we can also use other pre-trained model
             if self.dnn_detector_path == "":
-                # start = time.time()
                 faces = self.detector.detect_faces(img)
-                # print(time.time()-start)
                 for face in faces:
                     # get coordinates
                     x, y, width, height = face['box']
                     # what a disaster ...
                     # mtcnn predicts negative bounding boxes so we need to manually correct them
-                    if x < 0:
-                        x = 0
-                    if y < 0:
-                        y = 0
+                    x1 = 0 if x1 < 0 else x1
+                    y1 = 0 if y1 < 0 else y1
+
                     f = img[y:y+height, x:x+width]
                     if (self.experimental):
                         if (self.isAlive(f)['isAlive'] != True):
@@ -188,14 +185,9 @@ class ImgProcessor:
                     # Integer division "//"" ensures that we receive whole numbers
                     center = (w // 2, h // 2)
                     # Defining a matrix M and calling
-                    # cv2.getRotationMatrix2D method
-                    M = cv2.getRotationMatrix2D(center, (angle), 1.0)
+                    m = cv2.getRotationMatrix2D(center, (angle), 1.0)
                     # Applying the rotation to our image using the
-                    aligned_face = cv2.warpAffine(f, M, (w, h))
-                    #cv2.imshow('aligned_face', aligned_face)
-                    #cv2.waitKey(0)
-                    #cv2.destroyAllWindows()
-                    #cv2.imwrite('aligned_face.jpg', cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB))
+                    aligned_face = cv2.warpAffine(f, m, (w, h))
                     faces_array.append(aligned_face)
 
         if self.detector_type == "RetinaFace":
@@ -206,9 +198,7 @@ class ImgProcessor:
 
             # pad input image to avoid unmatched shape problem
             img, pad_params = pad_input_image(img, max_steps=max(self.face_det_cfg_path["steps"]))
-            # start = time.time()
             faces = self.detector(img[np.newaxis, ...]).numpy()
-            # print(time.time()-start)
             # recover padding effect
             faces = recover_pad_output(faces, pad_params)
 
@@ -217,10 +207,8 @@ class ImgProcessor:
                 x1, y1, x2, y2 = int(faces[face][0] * img_width), int(faces[face][1] * img_height), \
                                  int(faces[face][2] * img_width), int(faces[face][3] * img_height)
 
-                if x1 < 0:
-                    x1 = 0
-                if y1 < 0:
-                    y1 = 0
+                x1 = 0 if x1 < 0 else x1
+                y1 = 0 if y1 < 0 else y1
 
                 f = img[y1:y2, x1:x2]
 
@@ -243,14 +231,9 @@ class ImgProcessor:
                     # Integer division "//"" ensures that we receive whole numbers
                     center = (w // 2, h // 2)
                     # Defining a matrix M and calling
-                    # cv2.getRotationMatrix2D method
-                    M = cv2.getRotationMatrix2D(center, (angle), 1.0)
+                    m = cv2.getRotationMatrix2D(center, (angle), 1.0)
                     # Applying the rotation to our image using the
-                    aligned_face = cv2.warpAffine(f, M, (w, h))
-                    #cv2.imshow('aligned_face', aligned_face)
-                    #cv2.waitKey(0)
-                    #cv2.destroyAllWindows()
-                    #cv2.imwrite('aligned_face.jpg', cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB))
+                    aligned_face = cv2.warpAffine(f, m, (w, h))
                     faces_array.append(aligned_face)
 
         if self.write == "true":
@@ -270,14 +253,14 @@ class ImgProcessor:
         img = cv2.resize(img, (80, 80))
 
         # investigate why this wont work!
-        #net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        #net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-        #net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        #net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-        #net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        #net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
         blob1 = cv2.dnn.blobFromImage(img, 1, size=(80, 80), swapRB=False, crop=False)
         blob2 = cv2.dnn.blobFromImage(img, 1, size=(80, 80), swapRB=False, crop=False)
@@ -288,10 +271,8 @@ class ImgProcessor:
         prediction = np.zeros((1, 3))
 
         # Runs forward pass to compute outputs of layers listed in outBlobNames.
-        #start = time.time()
         prediction += softmax(self.net1.forward())
         prediction += softmax(self.net2.forward())
-        #print(time.time()-start)
 
         label = np.argmax(prediction)
         value = prediction[0][label] / 2
