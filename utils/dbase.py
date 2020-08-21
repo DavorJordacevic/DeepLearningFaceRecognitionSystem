@@ -4,43 +4,48 @@ import psycopg2
 import numpy as np
 import psycopg2.extras
 
-# dbConnect function is used to connect to Postgresql database
-def dbConnect(host, port, name, user, password):
-    try:
-        # user, password, host, port, name are from the config file
-        connection = psycopg2.connect(user = user,
-                                      password = password,
-                                      host = host,
-                                      port = port,
-                                      database = name)
-        db = connection.cursor()
-        # Print PostgreSQL Connection properties
-        #print(connection.get_dsn_parameters(),"\n")
 
-        # Print PostgreSQL version
+def db_connect(host, port, name, user, password):
+    """
+    db_connect
+    The function is used to connect to Postgresql database
+    :param host: str
+    :param port: int
+    :param name: str
+    :param user: str
+    :param password: str
+    :return: connection, db
+    """
+    try:
+        connection = psycopg2.connect(user=user,
+                                      password=password,
+                                      host=host,
+                                      port=port,
+                                      database=name)
+        db = connection.cursor()
+
+        # for debugging, printn DB version
         db.execute("SELECT version();")
         record = db.fetchone()
-        #print("You are connected to - ", record,"\n")
         #print("DB connection OK\n")
 
+        # enable uuid extension
         psycopg2.extras.register_uuid()
 
     except (Exception, psycopg2.Error) as error :
         logging.info("Error while connecting to PostgreSQL" + str(error))
         print("Error while connecting to PostgreSQL", error)
-    '''
-    finally:
-        # used only for testing purposs
-        # closing database connection.
-        if(connection):
-            db.close()
-            connection.close()
-            print("PostgreSQL connection is closed")
-    '''
+        return None, None
     return connection, db
 
-# function for reading all face descriptors and ids from database
-def readDescriptors(db):
+
+def read_descriptors(db):
+    """
+    read_descriptors
+    The function for reading all face descriptors and ids from database
+    :param db: cursor
+    :return: {} or [], [], []
+    """
     # check connection
     try:
         db
@@ -54,41 +59,54 @@ def readDescriptors(db):
 
     ids = []
     descriptors = []
-    personsids = []
+    persons_ids = []
 
-    if records != []:
+    if records:
 
         for r in records:
             ids.append(r[0])
             descriptors.append(r[1][0])
-            personsids.append(r[2])
+            persons_ids.append(r[2])
 
-        return ids, descriptors, personsids
+        return ids, descriptors, persons_ids
     else:
         return {'status': 'ERROR'}
 
 
-
-# function for writing records in database
-def receiveDescriptors(db, db_conn, name, embeds: np.array([])) -> str:
-
+def receive_descriptors(db, db_conn, name, embeds) -> dict:
+    """
+    receive_descriptors
+    The function for writing records in database
+    :param db: cursor
+    :param db_conn: connection
+    :param name: str
+    :param embeds: np.array([])
+    :return: dict
+    """
     query = 'INSERT INTO public.persons (name) VALUES (\'' + str(name) + '\') RETURNING "ID";'
     db.execute(query)
     records = db.fetchall()
     if records[0][0] != '':
-        personid = records[0][0]
+        person_id = records[0][0]
 
     for emb in embeds:
         emb = np.array(emb).tolist()
         query = 'INSERT INTO public.faces (descriptor, personid) VALUES (%s, %s);'
-        db.execute(query, (emb, (personid,)))
+        db.execute(query, (emb, (person_id,)))
     db_conn.commit()
     return {'status': 'SUCCESS'}
 
 
-def findPersonByID(db, db_conn, personid: str) -> dict:
+def find_person_by_id(db, person_id) -> dict:
+    """
+    find_person_by_id
+    The function for search the database for name
+    :param db: cursor
+    :param person_id: str
+    :return: dict
+    """
     query = 'SELECT p.name FROM public.persons p WHERE "ID" = %s;'
-    db.execute(query, (personid,))
+    db.execute(query, (person_id,))
     records = db.fetchall()
     if records[0][0] is not None:
         return {

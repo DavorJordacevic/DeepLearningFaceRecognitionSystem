@@ -3,7 +3,7 @@ from n2 import HnswIndex
 
 
 class RecognitionEngine:
-    def __init__(self, threshold):
+    def __init__(self, threshold: float):
         """
         __init__
         :param threshold: float
@@ -11,10 +11,11 @@ class RecognitionEngine:
         self.recognizer = None
         self.threshold = threshold
 
-    def makeBase(self, descriptors: []) -> str:
+    def make_base(self, descriptors: []) -> dict:
         """
-        makeBase
-        :param threshold: float
+        make_base
+        The function used for adding data and building the index
+        :param descriptors: []
         :return: img: numpy.array()
         """
         # initialize recognizer using empty ann and set angsular distance
@@ -30,20 +31,22 @@ class RecognitionEngine:
         self.recognizer.save('index.hnsw')
         return {'status': 'SUCCESS'}
 
-    def identification(self, descriptor: [], personids: []) -> dict:
+    def identification(self, descriptor: [], person_ids: []) -> dict:
         """
-        makeBase
-        :param threshold: float
-        :return: img: numpy.array()
+        identification
+        Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs
+        :param descriptor: []
+        :param person_ids: []
+        :return: dict
         """
         idx = self.recognizer.search_by_vector(np.array(descriptor).flatten(), 2, 1, include_distances=True)
-        #print(idx[0][1])
-        if (idx[0][1] < self.threshold):
-            personID = personids[idx[0][0]]
+
+        if idx[0][1] < self.threshold:
+            person_id = person_ids[idx[0][0]]
         else:
             # personID = None
-            personID = "Not recognized"
+            person_id = "Not recognized"
         return {
             'status': 'SUCCESS',
-            'personid': personID
+            'personid': person_id
         }

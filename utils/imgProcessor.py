@@ -69,8 +69,8 @@ class ImgProcessor:
 
         # initialize the ArcFace model
         self.model = ArcFaceModel(size=self.face_reco_cfg_path['input_size'],
-                             backbone_type=self.face_reco_cfg_path['backbone_type'],
-                             training=False)
+                                  backbone_type=self.face_reco_cfg_path['backbone_type'],
+                                  training=False)
 
         # load model weights
         ckpt_path = tf.train.latest_checkpoint(self.face_reco_checkpoints_path + self.face_reco_cfg_path['sub_name'])
@@ -96,7 +96,8 @@ class ImgProcessor:
         embeds = l2_norm(self.model(img))
         return embeds
 
-    def rescale_img_percent(self, img, percent=50) -> np.array([]):
+    @staticmethod
+    def rescale_img_percent(img: np.array([]), percent: int = 50) -> np.array([]):
         """
         rescale_img_percent
         Function for rescaling the image by some percent
@@ -109,7 +110,8 @@ class ImgProcessor:
         dim = (width, height)
         return cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
-    def resize_img(self, img: np.array([]), width: int, height: int, fx: int, fy: int, interpolation) -> np.array([]):
+    @staticmethod
+    def resize_img(img: np.array([]), width: int, height: int, fx: int, fy: int, interpolation) -> np.array([]):
         """
         rescale_img
         Function for rescaling the image to the desired size
@@ -169,7 +171,7 @@ class ImgProcessor:
 
                     f = img[y:y+height, x:x+width]
                     if self.experimental:
-                        if not self.isAlive(f)['isAlive']:
+                        if not self.is_alive(f)['isAlive']:
                             continue
 
                     right_eye_x, right_eye_y = face['keypoints']['right_eye'][0], face['keypoints']['right_eye'][1]
@@ -213,7 +215,7 @@ class ImgProcessor:
                 f = img[y1:y2, x1:x2]
 
                 if self.experimental:
-                    if not self.isAlive(f)['isAlive']:
+                    if not self.is_alive(f)['isAlive']:
                         continue
 
                 # landmark
@@ -242,9 +244,9 @@ class ImgProcessor:
 
         return faces_array
 
-    def isAlive(self, img: np.array([])) -> dict:
+    def is_alive(self, img: np.array([])) -> dict:
         """
-        isAlive
+        is_alive
         Function for performing prediction whether the face is real or fake.
         :param img: numpy.array()
         :return: dict

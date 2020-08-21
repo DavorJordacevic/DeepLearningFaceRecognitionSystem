@@ -32,7 +32,7 @@ app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png']
 cors = CORS(app)
 
 # initialize empty lists
-ids, descriptors, personsids = [], [], []
+ids, descriptors, persons_ids = [], [], []
 
 def shutdown_server():
     """
@@ -43,7 +43,6 @@ def shutdown_server():
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
-
 
 
 @app.route('/shutdown', methods=['POST'])
@@ -90,10 +89,10 @@ def detect() -> dict:
     faces = imgProcessor.detect(img)
     faces_b64 = []
     for face in faces:
-        # convert image to butes (base64 encoding)
+        # convert image to bytes (base64 encoding)
         faces_b64.append(str(base64.b64encode(face)))
     return {
-        'Status':'SUCCESS',
+        'Status': 'SUCCESS',
         # Serialization
         'faces': json.dumps(faces_b64)
     }
@@ -103,16 +102,15 @@ def detect() -> dict:
 # Create a URL route in our application for "/@app.route('/isalive')"
 # The purpose of this endpoint is to classify if the provided face is real or fake
 @app.route('/isalive', methods=["POST"])
-def isAlive() -> dict:
+def is_alive() -> dict:
     """
     isAlive
-    Performs the prediction if the face is real or fake (printed and video).
+    Performs the prediction if the face is real or fake.
     :return: dict
     """
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
-    return imgProcessor.isAlive(img)
-
+    return imgProcessor.is_alive(img)
 
 
 # Create a URL route in our application for "/@app.route('/isalive')"
@@ -132,26 +130,26 @@ def predict_rest() -> dict:
     img = np.array(pil_image)
 
     # detect faces
-    start = time.time()
     faces = imgProcessor.detect(img)
     response = []
 
-    for face in faces:
-        # encode face
-        descriptor = imgProcessor.encode(face)
+    global ids, descriptors, persons_ids
 
-        # find persoin id in the database
-        global ids, descriptors, personsids
-        if personsids != []:
-            personid = recEngine.identification(descriptor, personsids)
-            if (personid['personid'] is not None):
+    start = time.time()
+    if persons_ids:
+        for face in faces:
+            # encode face
+            descriptor = imgProcessor.encode(face)
+            # find personid in the database
+            person_id = recEngine.identification(descriptor, persons_ids)
+            if person_id['personid'] is not None:
                 # find name in the database
-                person = dbase.findPersonByID(db, db_conn, personid['personid'])
+                person = dbase.find_person_by_id(db, person_id['personid'])
                 response.append(person)
             else:
-                response.append(personid)
-        else:
-            response = 'Empty database'
+                response.append(person_id)
+    else:
+        response = 'Empty database'
     logging.info('Identification time: ' + str(time.time()-start))
     return {
         'status': 'SUCCESS',
@@ -159,11 +157,10 @@ def predict_rest() -> dict:
     }
 
 
-
 # Create a URL route in our application for "/@app.route('/encode')"
 # The purpose of this endpoint is to encode the face
 @app.route('/encodeAndInsert', methods=["POST"])
-def encodeAndInsert() -> dict:
+def encode_and_insert() -> dict:
     """
     encodeAndInsert
     The actual function for adding a new person into database.
@@ -174,24 +171,23 @@ def encodeAndInsert() -> dict:
     uploaded_files = request.files.getlist("images")
 
     embeds = []
-    if uploaded_files == []:
+    if not uploaded_files:
         return {"status": "ERROR"}
     for image in uploaded_files:
         pil_image = Image.open(image).convert('RGB')
-        # detect faace
+        # detect face
         faces = imgProcessor.detect(np.array(pil_image))
         if len(faces) != 1:
             return {'status': 'ERROR'}
         embeds.append(imgProcessor.encode(np.array(faces[0])))
 
-    result = dbase.receiveDescriptors(db, db_conn, name, embeds)
+    result = dbase.receive_descriptors(db, db_conn, name, embeds)
     if result['status'] != 'SUCCESS':
         return {'status': 'ERROR'}
 
-    global ids, descriptors, personsids
-    ids, descriptors, personsids = dbase.readDescriptors(db)
-    return recEngine.makeBase(descriptors)
-
+    global ids, descriptors, persons_ids
+    ids, descriptors, persons_ids = dbase.read_descriptors(db)
+    return recEngine.make_base(descriptors)
 
 
 if __name__ == '__main__':
@@ -237,19 +233,19 @@ if __name__ == '__main__':
     config_path = args.cdp
 
     cfg = config.readConfig(config_path)
-    db_conn, db = dbase.dbConnect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])
+    db_conn, db = dbase.db_connect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])
 
     imgProcessor = ImgProcessor(cfg)
     recEngine = RecognitionEngine(cfg['threshold'])
     logging.info('All models initialized successfully.')
 
-    try:
-        ids, descriptors, personsids = dbase.readDescriptors(db)
+    ids, descriptors, persons_ids = dbase.read_descriptors(db)
+    if persons_ids:
         logging.info('Read descriptors successful.')
-        recEngine.makeBase(np.array(descriptors))
+        recEngine.make_base(np.array(descriptors))
         logging.info('Make base successful.')
-    except:
-         logging.info('The database is empty.')
+    else:
+        logging.info('The database is empty.')
 
     # Run the flask rest api
     # This can be updated to use multiple threads or processors
@@ -259,6 +255,6 @@ if __name__ == '__main__':
     print(ascii_banner)
 
     logging.info('FR APP IS RUNNING.')
-    logging.info('---------------'*4)
+    logging.info('---------------' * 4)
     # threaded=False, processes=3
     app.run(debug=True, host='127.0.0.1', port=5000)

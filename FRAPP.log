@@ -1,18 +1,14 @@
-2020-08-21 23:26:58,141 INFO     Allow GPU memory grow successful.
-2020-08-21 23:26:58,142 INFO     Parsing arguments successful.
-2020-08-21 23:27:08,269 INFO     All models initialized successfully.
-2020-08-21 23:27:08,272 INFO     Read descriptors successful.
-2020-08-21 23:27:08,280 INFO     Make base successful.
-2020-08-21 23:27:08,284 INFO     FR APP IS RUNNING.
-2020-08-21 23:27:08,284 INFO     ------------------------------------------------------------
-2020-08-21 23:27:08,291 WARNING   * Debugger is active!
-2020-08-21 23:27:08,337 INFO      * Debugger PIN: 107-234-099
-2020-08-21 23:27:11,681 INFO     127.0.0.1 - - [21/Aug/2020 23:27:11] "[35m[1mPOST /identification HTTP/1.1[0m" 500 -
-2020-08-21 23:27:13,171 INFO     Identification time: 4.757075786590576
-2020-08-21 23:27:13,172 INFO     127.0.0.1 - - [21/Aug/2020 23:27:13] "[37mPOST /identification HTTP/1.1[0m" 200 -
-2020-08-21 23:27:21,817 INFO     Identification time: 0.22301840782165527
-2020-08-21 23:27:21,818 INFO     127.0.0.1 - - [21/Aug/2020 23:27:21] "[37mPOST /identification HTTP/1.1[0m" 200 -
-2020-08-21 23:27:36,483 INFO     Identification time: 1.331660270690918
-2020-08-21 23:27:36,484 INFO     127.0.0.1 - - [21/Aug/2020 23:27:36] "[37mPOST /identification HTTP/1.1[0m" 200 -
-2020-08-21 23:27:43,610 INFO     Identification time: 0.48329877853393555
-2020-08-21 23:27:43,611 INFO     127.0.0.1 - - [21/Aug/2020 23:27:43] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-22 01:56:46,474 INFO     Allow GPU memory grow successful.
+2020-08-22 01:56:46,474 INFO     Parsing arguments successful.
+2020-08-22 01:56:56,371 INFO     All models initialized successfully.
+2020-08-22 01:56:56,372 INFO     Read descriptors successful.
+2020-08-22 01:56:56,376 INFO     Make base successful.
+2020-08-22 01:56:56,378 INFO     FR APP IS RUNNING.
+2020-08-22 01:56:56,378 INFO     ------------------------------------------------------------
+2020-08-22 01:56:56,381 WARNING   * Debugger is active!
+2020-08-22 01:56:56,400 INFO      * Debugger PIN: 107-234-099
+2020-08-22 01:57:50,450 INFO     127.0.0.1 - - [22/Aug/2020 01:57:50] "[37mPOST /encodeAndInsert HTTP/1.1[0m" 200 -
+2020-08-22 01:57:59,228 INFO     Identification time: 0.04468250274658203
+2020-08-22 01:57:59,228 INFO     127.0.0.1 - - [22/Aug/2020 01:57:59] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-08-22 01:58:08,742 INFO     Identification time: 0.04332566261291504
+2020-08-22 01:58:08,742 INFO     127.0.0.1 - - [22/Aug/2020 01:58:08] "[37mPOST /identification HTTP/1.1[0m" 200 -
