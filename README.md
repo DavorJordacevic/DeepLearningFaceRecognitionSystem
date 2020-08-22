@@ -61,7 +61,7 @@ mv retinaface_mbv2 retinaface_tf2/checkpoints/retinaface_mbv2
 
 #### Automatic setup
 
-```$ frapp.sh```
+```$ bash frapp.sh```
 
 <hr>
 
