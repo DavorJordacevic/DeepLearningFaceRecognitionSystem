@@ -70,6 +70,9 @@ Check: <a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">Fro
 ### Complete system setup (FRAPP, Database, <a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">Frontend</a>, <a href="https://github.com/DavorJordacevic/ArcFace-TF2.x">ArcFace</a>, <a href="https://github.com/DavorJordacevic/retinaface-tf2">RetinaFace</a>)
 Check: <a href="https://github.com/DavorJordacevic/FRAPP_Setup">FRAPP Setup</a>
 
+#### Face recognition process
+<img src="fr_process.jpg" alt="face_recognition_process" width="800"/>
+
 <hr>
 
 #### TODO
