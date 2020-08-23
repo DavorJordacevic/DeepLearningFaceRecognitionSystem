@@ -31,7 +31,7 @@ rm -rf arc_mbv2.zip
 mkdir arcface_tf2/checkpoints
 mv arc_mbv2 arcface_tf2/checkpoints/arc_mbv2
 
-git clone https://github.com/peteryuX/retinaface-tf2.git
+git clone https://github.com/DavorJordacevic/retinaface-tf2
 mv retinaface-tf2 retinaface_tf2
 rm -rf retinaface_mbv2.zip
 mkdir retinaface_tf2/checkpoints
