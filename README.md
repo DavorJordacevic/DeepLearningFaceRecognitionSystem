@@ -64,6 +64,12 @@ mv retinaface_mbv2 retinaface_tf2/checkpoints/retinaface_mbv2
 ### Database model
 <img src="database.png" alt="database_model" width="600"/>
 
+### Database model
+Check: <a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">FrontEnd</a>
+
+### Complete system setup (<a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">FrontEnd</a>, <a href="https://github.com/DavorJordacevic/ArcFace-TF2.x">ArcFace</a>, <a href="https://github.com/DavorJordacevic/retinaface-tf2>RetinaFace</a>)
+Check: <a href="https://github.com/DavorJordacevic/FRAPP_Setup">FRAPP Setup</a>
+
 <hr>
 
 #### TODO
@@ -77,3 +83,12 @@ mv retinaface_mbv2 retinaface_tf2/checkpoints/retinaface_mbv2
 <hr>
 
 #### License
+
+### References
+
+<a href="https://github.com/peteryuX/arcface-tf2">peteryuX/arcface-tf2</a>
+
+<a href="https://github.com/peteryuX/retinaface-tf2">peteryuX/retinaface-tf2</a>
+
+<a href="https://github.com/kakao/n2">kakao/N2</a>
+
