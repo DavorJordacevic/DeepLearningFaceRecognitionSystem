@@ -64,10 +64,10 @@ mv retinaface_mbv2 retinaface_tf2/checkpoints/retinaface_mbv2
 ### Database model
 <img src="database.png" alt="database_model" width="600"/>
 
-### Database model
-Check: <a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">FrontEnd</a>
+### Frontend
+Check: <a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">Frontend</a>
 
-### Complete system setup (<a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">FrontEnd</a>, <a href="https://github.com/DavorJordacevic/ArcFace-TF2.x">ArcFace</a>, <a href="https://github.com/DavorJordacevic/retinaface-tf2>RetinaFace</a>)
+### Complete system setup (<a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">Frontend</a>, <a href="https://github.com/DavorJordacevic/ArcFace-TF2.x">ArcFace</a>, <a href="https://github.com/DavorJordacevic/retinaface-tf2">RetinaFace</a>)
 Check: <a href="https://github.com/DavorJordacevic/FRAPP_Setup">FRAPP Setup</a>
 
 <hr>
