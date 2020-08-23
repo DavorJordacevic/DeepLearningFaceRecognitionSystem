@@ -61,6 +61,9 @@ mv retinaface_mbv2 retinaface_tf2/checkpoints/retinaface_mbv2
 
 ```$ bash frapp.sh```
 
+### Database model
+<img src="database.png" alt="database_model" width="600"/>
+
 <hr>
 
 #### TODO
