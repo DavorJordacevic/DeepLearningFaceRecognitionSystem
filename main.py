@@ -192,12 +192,12 @@ def encode_and_insert() -> dict:
 
 if __name__ == '__main__':
 
+    # remove old log file
+    os.remove("FRAPP.log")
+
     # set environment variables
     os.environ['FLASK_ENV'] = 'development'
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-    # remove old log file
-    os.remove("FRAPP.log")
 
     # turn off tensorflow logger
     logger = tf.get_logger()
@@ -220,10 +220,6 @@ if __name__ == '__main__':
 
     logging.info('Allow GPU memory grow successful.')
 
-    # Just some prints for health check (can be deleted with any effect on the following code)
-    # print("OpenCV version: ", cv2.__version__)
-    # print("TensorFlow version: ", tf.__version__, "  GPU avaiable: ", tf.config.list_physical_devices('GPU'))
-
     # parse arguements
     parser = argparse.ArgumentParser(description='Process some arguments.')
     parser.add_argument('--cdp', type=str, help='the path to config file')
@@ -235,16 +231,19 @@ if __name__ == '__main__':
     cfg = config.readConfig(config_path)
     db_conn, db = dbase.db_connect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])
 
+    # initialize image processor (used for detection, antispoofing and vector extraction)
     imgProcessor = ImgProcessor(cfg)
+    # initialize recognition engine
     recEngine = RecognitionEngine(cfg['threshold'])
     logging.info('All models initialized successfully.')
 
-    ids, descriptors, persons_ids = dbase.read_descriptors(db)
-    if persons_ids:
+    try:
+        # read ids, descriptors and person_ids from database
+        ids, descriptors, persons_ids = dbase.read_descriptors(db)
         logging.info('Read descriptors successful.')
         recEngine.make_base(np.array(descriptors))
         logging.info('Make base successful.')
-    else:
+    except:
         logging.info('The database is empty.')
 
     # Run the flask rest api

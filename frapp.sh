@@ -17,8 +17,6 @@ pip3 install Cython
 pip3 install n2
 pip3 install googledrivedownloader
 
-conda install -c anaconda cupy
-
 git clone https://github.com/DavorJordacevic/DeepLearningFaceRecognitionSystem
 cd DeepLearningFaceRecognitionSystem
 
