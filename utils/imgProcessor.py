@@ -236,6 +236,7 @@ class ImgProcessor:
                     m = cv2.getRotationMatrix2D(center, (angle), 1.0)
                     # Applying the rotation to our image using the
                     aligned_face = cv2.warpAffine(f, m, (w, h))
+                    #cv2.imwrite('aligned.jpg', cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB))
                     faces_array.append(aligned_face)
 
         if self.write == "true":

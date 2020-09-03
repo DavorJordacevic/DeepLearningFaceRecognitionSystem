@@ -72,7 +72,7 @@ def healtcheck() -> dict:
         'GPU_available': 'Yes' if gpus else 'No'
     }
 
-
+'''
 # Create a URL route in our application for "/@app.route('/detect')"
 # The purpose of this endpoint is to extract faces from the providied imagage
 @app.route('/detect', methods=["POST"])
@@ -111,7 +111,7 @@ def is_alive() -> dict:
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
     return imgProcessor.is_alive(img)
-
+'''
 
 # Create a URL route in our application for "/@app.route('/isalive')"
 # The purpose of this endpoint is to classify if the provided face is real or fake
@@ -128,7 +128,7 @@ def predict_rest() -> dict:
     """
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
-
+    img = cv2.resize(img, (800, 600))
     # detect faces
     faces = imgProcessor.detect(img)
     response = []
@@ -142,7 +142,7 @@ def predict_rest() -> dict:
             descriptor = imgProcessor.encode(face)
             # find personid in the database
             person_id = recEngine.identification(descriptor, persons_ids)
-            if person_id['personid'] is not None:
+            if person_id['personid'] != 'Not recognized':
                 # find name in the database
                 person = dbase.find_person_by_id(db, person_id['personid'])
                 response.append(person)
