@@ -75,6 +75,18 @@ Check: <a href="https://github.com/DavorJordacevic/FRAPP_Setup">FRAPP Setup</a>
 
 <hr>
 
+#### Start the service
+
+```
+$ ./start.sh
+```
+
+##### Stop the service
+
+```
+$ ./stop.sh
+```
+
 #### TODO
 * Fix face anti-spoofing
 * Docker
