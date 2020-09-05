@@ -5,6 +5,7 @@ import mtcnn
 import numpy as np
 import tensorflow as tf
 from scipy.special import softmax
+
 sys.path.append('./retinaface_tf2/')
 from arcface_tf2.modules.models import ArcFaceModel
 from arcface_tf2.modules.utils import load_yaml, l2_norm
@@ -88,7 +89,8 @@ class ImgProcessor:
         :param img: numpy.array()
         :return: img: numpy.array()
         """
-        img = cv2.resize(np.array(img), (self.face_reco_cfg_path['input_size'], self.face_reco_cfg_path['input_size']), cv2.INTER_LINEAR)
+        img = cv2.resize(np.array(img), (self.face_reco_cfg_path['input_size'], self.face_reco_cfg_path['input_size']),
+                         cv2.INTER_LINEAR)
         img = img.astype(np.float32) / 255.
         if len(img.shape) == 3:
             img = np.expand_dims(img, 0)
@@ -122,6 +124,11 @@ class ImgProcessor:
         faces_array = []
 
         if self.detector_type == "SSD":
+
+            # remove an alpha channel
+            if img.shape[2] == 4:
+                img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+
             (h, w) = img.shape[:2]
             blob = cv2.dnn.blobFromImage(cv2.resize(img, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
             self.detector.setInput(blob)
@@ -135,14 +142,18 @@ class ImgProcessor:
                 # filter out weak detections by ensuring the `confidence` is
                 # greater than the minimum confidence
                 if confidence > self.min_confidence:
-                    face = True
                     # compute the (x, y)-coordinates of the bounding box for the object
                     box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                     (startX, startY, endX, endY) = box.astype("int")
                     f = img[startX:endX, startY:endY]
-                    faces_array = np.append(faces_array, f)
+                    faces_array.append(f)
 
         if self.detector_type == "MTCNN":
+
+            # remove an alpha channel
+            if img.shape[2] == 4:
+                img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+
             # we can also use other pre-trained model
             if self.dnn_detector_path == "":
                 faces = self.detector.detect_faces(img)
@@ -154,7 +165,7 @@ class ImgProcessor:
                     x = 0 if x < 0 else x
                     y = 0 if y < 0 else y
 
-                    f = img[y:y+height, x:x+width]
+                    f = img[y:y + height, x:x + width]
                     if self.experimental:
                         if not self.is_alive(f)['isAlive']:
                             continue
@@ -182,7 +193,8 @@ class ImgProcessor:
             img_height, img_width, _ = img.shape
 
             if self.face_det_down_scale_factor < 1.0:
-                img = cv2.resize(img, (0, 0), self.face_det_down_scale_factor, self.face_det_down_scale_factor, cv2.INTER_LINEAR)
+                img = cv2.resize(img, (0, 0), self.face_det_down_scale_factor, self.face_det_down_scale_factor,
+                                 cv2.INTER_LINEAR)
 
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -232,12 +244,12 @@ class ImgProcessor:
                     m = cv2.getRotationMatrix2D(center, (angle), 1.0)
                     # Applying the rotation to our image using the
                     aligned_face = cv2.warpAffine(f, m, (w, h))
-                    #cv2.imwrite('aligned.jpg', cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB))
+                    # cv2.imwrite('aligned.jpg', cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB))
                     faces_array.append(aligned_face)
 
         if self.write == "true":
             for face in faces_array:
-                cv2.imwrite(str(uuid.uuid4())+'.jpg', face)
+                cv2.imwrite(str(uuid.uuid4()) + '.jpg', face)
 
         return faces_array
 
@@ -253,14 +265,14 @@ class ImgProcessor:
 
         # investigate why this wont work!
         # uncomment if opencv is built with cuda
-        #self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        #self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        # self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        # self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-        #self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        #self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        # self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        # self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-        #self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        #self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        # self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        # self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
         blob1 = cv2.dnn.blobFromImage(img, 1, size=(80, 80), swapRB=False, crop=False)
         blob2 = cv2.dnn.blobFromImage(img, 1, size=(80, 80), swapRB=False, crop=False)
