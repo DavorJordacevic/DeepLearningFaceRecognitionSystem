@@ -22,17 +22,15 @@ def main():
     folders.remove(folders[0])
 
     for folder in folders:
-        for subdir, dirs, files in os.walk(folder):
-            for file in files:
-                file = os.path.join(folder, subdir, file)
-                print(file)
-                payload = {'name': str(uuid.uuid4())}
-                files = [
-                    ('images', open(file, 'rb'))
-                ]
-                headers = {}
-                response = requests.request("POST", url, headers=headers, data=payload, files=files)
-                #time.sleep(2)
+        post_files = []
+        for filename in os.listdir(folder):
+            file = os.path.join(folder, filename)
+            print(file)
+            post_files.append(('images', open(file, 'rb')))
+        payload = {'name': str(folder).split('/')[-1]}
+        headers = {}
+        _ = requests.request("POST", url, headers=headers, data=payload, files=post_files)
+
 
 if __name__ == '__main__':
     main()

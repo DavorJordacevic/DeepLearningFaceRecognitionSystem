@@ -128,7 +128,7 @@ def predict_rest() -> dict:
     """
     pil_image = Image.open(request.files['image']).convert('RGB')
     img = np.array(pil_image)
-    img = cv2.resize(img, (800, 600))
+    img = cv2.resize(img, (640, 640))
     # detect faces
     faces = imgProcessor.detect(img)
     response = []
@@ -175,8 +175,11 @@ def encode_and_insert() -> dict:
         return {"status": "ERROR"}
     for image in uploaded_files:
         pil_image = Image.open(image).convert('RGB')
+        img = np.array(pil_image)
+        img = cv2.resize(img, (640, 640))
         # detect face
-        faces = imgProcessor.detect(np.array(pil_image))
+        faces = imgProcessor.detect(img)
+
         if len(faces) != 1:
             return {'status': 'ERROR'}
         embeds.append(imgProcessor.encode(np.array(faces[0])))

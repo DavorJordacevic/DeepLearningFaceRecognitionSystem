@@ -256,14 +256,15 @@ class ImgProcessor:
         img = cv2.resize(img, (80, 80))
 
         # investigate why this wont work!
-        self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        # uncomment if opencv is built with cuda
+        #self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        #self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-        self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        #self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        #self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
-        self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+        #self.net1.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+        #self.net2.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
 
         blob1 = cv2.dnn.blobFromImage(img, 1, size=(80, 80), swapRB=False, crop=False)
         blob2 = cv2.dnn.blobFromImage(img, 1, size=(80, 80), swapRB=False, crop=False)

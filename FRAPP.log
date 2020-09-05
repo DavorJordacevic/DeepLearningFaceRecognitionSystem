@@ -1,2 +1,27 @@
-2020-09-05 13:59:01,872 INFO     Allow GPU memory grow successful.
-2020-09-05 13:59:01,873 INFO     Parsing arguments successful.
+2020-09-05 15:41:22,265 INFO     Allow GPU memory grow successful.
+2020-09-05 15:41:22,266 INFO     Parsing arguments successful.
+2020-09-05 15:41:32,483 INFO     All models initialized successfully.
+2020-09-05 15:41:32,500 INFO     Read descriptors successful.
+2020-09-05 15:41:32,536 INFO     Make base successful.
+2020-09-05 15:41:32,539 INFO     FR APP IS RUNNING.
+2020-09-05 15:41:32,539 INFO     ------------------------------------------------------------
+2020-09-05 15:41:32,542 WARNING   * Debugger is active!
+2020-09-05 15:41:32,578 INFO      * Debugger PIN: 116-048-689
+2020-09-05 15:41:35,766 INFO     Identification time: 0.06053590774536133
+2020-09-05 15:41:35,767 INFO     127.0.0.1 - - [05/Sep/2020 15:41:35] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-09-05 15:41:41,281 INFO     Identification time: 0.05395030975341797
+2020-09-05 15:41:41,282 INFO     127.0.0.1 - - [05/Sep/2020 15:41:41] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-09-05 15:41:48,853 INFO     Identification time: 0.0455477237701416
+2020-09-05 15:41:48,853 INFO     127.0.0.1 - - [05/Sep/2020 15:41:48] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-09-05 15:41:59,921 INFO     Identification time: 0.04346179962158203
+2020-09-05 15:41:59,922 INFO     127.0.0.1 - - [05/Sep/2020 15:41:59] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-09-05 15:42:04,519 INFO     Identification time: 0.044855594635009766
+2020-09-05 15:42:04,521 INFO     127.0.0.1 - - [05/Sep/2020 15:42:04] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-09-05 15:42:10,568 INFO     Identification time: 0.04609823226928711
+2020-09-05 15:42:10,568 INFO     127.0.0.1 - - [05/Sep/2020 15:42:10] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-09-05 15:44:04,276 INFO     Identification time: 0.04209017753601074
+2020-09-05 15:44:04,276 INFO     127.0.0.1 - - [05/Sep/2020 15:44:04] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-09-05 15:44:10,946 INFO     Identification time: 0.04462933540344238
+2020-09-05 15:44:10,947 INFO     127.0.0.1 - - [05/Sep/2020 15:44:10] "[37mPOST /identification HTTP/1.1[0m" 200 -
+2020-09-05 15:44:14,682 INFO     Identification time: 0.05493927001953125
+2020-09-05 15:44:14,683 INFO     127.0.0.1 - - [05/Sep/2020 15:44:14] "[37mPOST /identification HTTP/1.1[0m" 200 -
