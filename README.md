@@ -62,7 +62,7 @@ mv retinaface_mbv2 retinaface_tf2/checkpoints/retinaface_mbv2
 ```$ bash frapp.sh```
 
 ### Database model
-<img src="database.png" alt="database_model" width="600"/>
+<img src="images/database2.png" alt="database_model" width="600" align="center"/>
 
 ### Frontend
 Check: <a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">Frontend</a>
@@ -71,7 +71,7 @@ Check: <a href="https://github.com/DavorJordacevic/FaceRecognition-FrontEnd">Fro
 Check: <a href="https://github.com/DavorJordacevic/FRAPP_Setup">FRAPP Setup</a>
 
 #### Face recognition process
-<img src="fr_process.jpg" alt="face_recognition_process" width="800"/>
+<img src="images/fr_process.jpg" alt="face_recognition_process" width="800" align="center"/>
 
 <hr>
 

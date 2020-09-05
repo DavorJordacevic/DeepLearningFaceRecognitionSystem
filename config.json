@@ -13,7 +13,7 @@
   "face_reco_checkpoints_path": "./arcface_tf2/checkpoints/",
   "face_det_cfg_path": "./retinaface_tf2/configs/retinaface_mbv2.yaml",
   "face_det_checkpoints_path": "./retinaface_tf2/checkpoints/",
-  "face_det_iou_th": 0.3,
+  "face_det_iou_th": 0.4,
   "face_det_score_th": 0.6,
   "face_det_down_scale_factor" : 1.0,
   "write_to_file": "false",

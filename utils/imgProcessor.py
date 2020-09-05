@@ -88,7 +88,7 @@ class ImgProcessor:
         :param img: numpy.array()
         :return: img: numpy.array()
         """
-        img = self.resize_img(np.array(img), self.face_reco_cfg_path['input_size'], self.face_reco_cfg_path['input_size'], 0, 0, cv2.INTER_LINEAR)
+        img = cv2.resize(np.array(img), (self.face_reco_cfg_path['input_size'], self.face_reco_cfg_path['input_size']), cv2.INTER_LINEAR)
         img = img.astype(np.float32) / 255.
         if len(img.shape) == 3:
             img = np.expand_dims(img, 0)
@@ -109,21 +109,6 @@ class ImgProcessor:
         height = int(img.shape[0] * percent / 100)
         dim = (width, height)
         return cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-
-    @staticmethod
-    def resize_img(img: np.array([]), width: int, height: int, fx: int, fy: int, interpolation) -> np.array([]):
-        """
-        rescale_img
-        Function for rescaling the image to the desired size
-        :param img: numpy.array()
-        :param width: int
-        :param height: int
-        :param fx: int
-        :param fy: int
-        :param interpolation: cv2.INTER_LINEAR
-        :return: img: numpy.array()
-        """
-        return cv2.resize(img, (width, height), fx, fy, interpolation)
 
     def detect(self, img: np.array([])) -> np.array([]):
         """
@@ -193,17 +178,25 @@ class ImgProcessor:
                     faces_array.append(aligned_face)
 
         if self.detector_type == "RetinaFace":
+
             img_height, img_width, _ = img.shape
 
             if self.face_det_down_scale_factor < 1.0:
-                img = self.resize_img(img, 0, 0, self.face_det_down_scale_factor, self.face_det_down_scale_factor, cv2.INTER_LINEAR)
+                img = cv2.resize(img, (0, 0), self.face_det_down_scale_factor, self.face_det_down_scale_factor, cv2.INTER_LINEAR)
+
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             # pad input image to avoid unmatched shape problem
             img, pad_params = pad_input_image(img, max_steps=max(self.face_det_cfg_path["steps"]))
+
+            def d(img):
+                return self.detector(img[np.newaxis, ...]).numpy()
+
             faces = self.detector(img[np.newaxis, ...]).numpy()
             # recover padding effect
             faces = recover_pad_output(faces, pad_params)
 
+            fa = 0
             for face in range(len(faces)):
                 # get coordinates
                 x1, y1, x2, y2 = int(faces[face][0] * img_width), int(faces[face][1] * img_height), \
@@ -213,6 +206,9 @@ class ImgProcessor:
                 y1 = 0 if y1 < 0 else y1
 
                 f = img[y1:y2, x1:x2]
+
+                if f.shape[0] < 64 or f.shape[1] < 64:
+                    continue
 
                 if self.experimental:
                     if not self.is_alive(f)['isAlive']:

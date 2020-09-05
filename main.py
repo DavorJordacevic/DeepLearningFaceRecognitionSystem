@@ -34,6 +34,7 @@ cors = CORS(app)
 # initialize empty lists
 ids, descriptors, persons_ids = [], [], []
 
+
 def shutdown_server():
     """
     shutdown_server
@@ -71,6 +72,7 @@ def healtcheck() -> dict:
         'Tensorflow_version': tf.__version__,
         'GPU_available': 'Yes' if gpus else 'No'
     }
+
 
 '''
 # Create a URL route in our application for "/@app.route('/detect')"
@@ -113,6 +115,7 @@ def is_alive() -> dict:
     return imgProcessor.is_alive(img)
 '''
 
+
 # Create a URL route in our application for "/@app.route('/isalive')"
 # The purpose of this endpoint is to classify if the provided face is real or fake
 @app.route('/identification', methods=["POST"])
@@ -126,9 +129,16 @@ def predict_rest() -> dict:
     and angular distance metric.
     :return: dict
     """
-    pil_image = Image.open(request.files['image']).convert('RGB')
-    img = np.array(pil_image)
-    img = cv2.resize(img, (640, 640))
+    pil_image = Image.open(request.files['image'])
+    img = np.float32(pil_image)
+
+    # check image size (important for gpus with less vram)
+    if img.shape[0]*img.shape[1] > 1920*1080:
+        return{
+            'status': 'ERROR',
+            'response': 'Inappropriate image size (use smaller images).'
+        }
+
     # detect faces
     faces = imgProcessor.detect(img)
     response = []
@@ -149,7 +159,10 @@ def predict_rest() -> dict:
             else:
                 response.append(person_id)
     else:
-        response = 'Empty database'
+        return {
+            'status': 'ERROR',
+            'response': 'Empty database'
+        }
     logging.info('Identification time: ' + str(time.time()-start))
     return {
         'status': 'SUCCESS',
@@ -174,19 +187,28 @@ def encode_and_insert() -> dict:
     if not uploaded_files:
         return {"status": "ERROR"}
     for image in uploaded_files:
-        pil_image = Image.open(image).convert('RGB')
-        img = np.array(pil_image)
-        img = cv2.resize(img, (640, 640))
+        pil_image = Image.open(image)
+        img = np.float32(pil_image)
+
+        # check image size (important for gpus with less vram)
+        if img.shape[0] * img.shape[1] > 1920 * 1080:
+            return {
+                'status': 'ERROR',
+                'response': 'Inappropriate image size (use smaller images).'
+            }
+
         # detect face
         faces = imgProcessor.detect(img)
 
         if len(faces) != 1:
-            return {'status': 'ERROR'}
+            return {
+                'status': 'ERROR',
+                'response': 'Images must contain only one face. Please try again.'
+            }
+
         embeds.append(imgProcessor.encode(np.array(faces[0])))
 
-    result = dbase.receive_descriptors(db, db_conn, name, embeds)
-    if result['status'] != 'SUCCESS':
-        return {'status': 'ERROR'}
+    _ = dbase.receive_descriptors(db, db_conn, name, embeds)
 
     global ids, descriptors, persons_ids
     ids, descriptors, persons_ids = dbase.read_descriptors(db)
@@ -223,7 +245,7 @@ if __name__ == '__main__':
 
     logging.info('Allow GPU memory grow successful.')
 
-    # parse arguements
+    # parse arguments
     parser = argparse.ArgumentParser(description='Process some arguments.')
     parser.add_argument('--cdp', type=str, help='the path to config file')
     logging.info('Parsing arguments successful.')
@@ -234,7 +256,7 @@ if __name__ == '__main__':
     cfg = config.readConfig(config_path)
     db_conn, db = dbase.db_connect(cfg["host"], cfg["port"], cfg["name"], cfg["user"], cfg["password"])
 
-    # initialize image processor (used for detection, antispoofing and vector extraction)
+    # initialize image processor (used for detection, anti-spoofing and vector extraction)
     imgProcessor = ImgProcessor(cfg)
     # initialize recognition engine
     recEngine = RecognitionEngine(cfg['threshold'])
